@@ -33,11 +33,11 @@ const CountdownTimer = ({ expiryDate }: { expiryDate: string }) => {
       } transition-all duration-500`}
     >
       {timeLeft.expired ? (
-        <p className="text-2xl font-semibold">⏳ Đã hết hạn</p>
+        <p className="text-2xl font-semibold">Đã hết hạn</p>
       ) : (
-        <div className="flex flex-col items-center space-y-3">
-          <p className="text-lg font-medium">⏳ Thời gian còn lại:</p>
-          <div className="flex space-x-3 text-3xl font-bold">
+        <div className="flex flex-col items-start space-y-3">
+          <p className="text-lg font-medium">Thời gian còn lại:</p>
+          <div className="flex gap-5 text-xl font-bold">
             <span className="bg-white px-4 py-2">{timeLeft.days}d</span>
             <span className="bg-white px-4 py-2">{timeLeft.hours}h</span>
             <span className="bg-white px-4 py-2">{timeLeft.minutes}m</span>

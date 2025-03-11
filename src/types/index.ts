@@ -311,3 +311,15 @@ export interface Errors {
   password?: string;
   password_confirmation?: string;
 }
+
+export interface SaveProduct {
+  id: number;
+  code: string;
+  expiry_date: string; // Hoặc Date nếu bạn muốn xử lý ngày tháng
+  reminder_days: number;
+}
+
+export interface ApiResponse {
+  success: boolean;
+  products: SaveProduct[];
+}

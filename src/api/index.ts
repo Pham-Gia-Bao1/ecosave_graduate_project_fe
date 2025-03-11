@@ -636,6 +636,27 @@ export async function getSaveProductOfUser(userId: number): Promise<string[] | n
 }
 
 
+export async function getSaveProductOfUserId(userId: number): Promise<string[] | null> {
+  const url = `${serverUrl}/saved-products/all`;
+  const token = localStorage.getItem("access_token");
+  try {
+    const response = await axios.get<{ success: boolean; data: { code: string }[] }>(url, {
+      params: { user_id: userId },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.data.data) {
+      const productIds = response.data.data.map((p) => p.code);
+      return productIds;
+    } else {
+      console.warn("⚠️ API returned false success status");
+      return null;
+    }
+  } catch (error) {
+    console.error("❌ Error fetching product IDs:", error);
+    return null;
+  }
+}
+
 
 
 export const checkProductExists = async (userId: number, code: string) => {
@@ -721,5 +742,35 @@ export const getUserOrders = async () => {
     return null;
   }
 };
+
+export const deleteSaveProductById = async (code: string): Promise<boolean> => {
+  const token = localStorage.getItem("access_token"); // Lấy token từ localStorage
+  if (!token) {
+    console.error("❌ Lỗi: Không tìm thấy access_token");
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${serverUrl}/save-products/${code}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`, // Thêm token vào headers
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Xóa sản phẩm thất bại: ${errorText}`);
+    }
+
+    console.log(`Sản phẩm xóa thành công`);
+    return true;
+  } catch (error) {
+    console.error(`Lỗi khi xóa sản phẩm:`, error);
+    return false;
+  }
+};
+
 
 export { getProductByStoreId, getStoreById, getNearingStores, getCSRF, logIn, fetchUserInfo, register, getLatLng, getLocationSuggestions, getProducts, getCategories, getProductsByCategoryId };

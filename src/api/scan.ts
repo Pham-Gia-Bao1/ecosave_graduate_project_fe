@@ -61,18 +61,4 @@ export async function getAllProducts(): Promise<ProductScan[] | null> {
   }
 }
 
-export const deleteProductById = async (id: string): Promise<boolean> => {
-  try {
-    const response = await fetch(`${serverUrl}/products/${id}`, {
-      method: "DELETE",
-    });
 
-    if (!response.ok) throw new Error("Xóa sản phẩm thất bại");
-
-    console.log(`✅ Sản phẩm ${id} đã bị xóa thành công`);
-    return true;
-  } catch (error) {
-    console.error(`❌ Lỗi khi xóa sản phẩm:`, error);
-    return false;
-  }
-};

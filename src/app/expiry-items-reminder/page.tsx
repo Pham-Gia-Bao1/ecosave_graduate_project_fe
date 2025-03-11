@@ -8,7 +8,7 @@ import { ProductScan } from "@/types";
 import { getProductsByIds } from "@/api/scan";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { getSaveProductOfUser } from "@/api";
+import {  getSaveProductOfUserId } from "@/api";
 import Loading from "../loading";
 
 export default function ExpiryPage() {
@@ -21,7 +21,7 @@ export default function ExpiryPage() {
     console.log(user?.id)
     if (user?.id) {
       setLoading(true);
-      getSaveProductOfUser(user.id)
+      getSaveProductOfUserId(user.id)
         .then((productIds) => {
           console.log("Saved product IDs:", productIds);
           return productIds ? getProductsByIds(productIds) : null;

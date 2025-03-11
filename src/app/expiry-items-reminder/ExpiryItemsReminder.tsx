@@ -6,8 +6,9 @@ import { Trash } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import { deleteProductById } from "@/api/scan";
 import CountdownTimer from "./CountdownTimer";
+import ToastNotification from "@/components/toast/ToastNotification";
+import { deleteSaveProductById } from "@/api";
 
 const getDaysDifference = (expiryDate: string) => {
   const today = new Date();
@@ -40,6 +41,10 @@ export default function ExpiryItemsReminder({
     null
   );
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [toast, setToast] = useState<{
+    message: string;
+    keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
+  } | null>(null);
 
   const filteredProducts = listProducts.filter((product) => {
     const daysRemaining = getDaysDifference(product.expiryDate);
@@ -72,15 +77,15 @@ export default function ExpiryItemsReminder({
 
   const deleteProduct = async (productId: string) => {
     console.log(productId);
-    const isDeleted = await deleteProductById(productId);
-
+    const isDeleted = await deleteSaveProductById(productId);
     if (isDeleted) {
       setListProducts((prev) => prev.filter((p) => p._id !== productId));
-      console.log(`✅ Đã xóa sản phẩm có ID: ${productId}`);
+      setToast({ message: `Đã xóa sản phẩm thành công `, keyword: "SUCCESS" });
     } else {
-      console.log(`❌ Không thể xóa sản phẩm có ID: ${productId}`);
+      setToast({ message: `Không thể xóa sản phẩm`, keyword: "ERROR" });
     }
   };
+
 
   return (
     <div className="flex p-4 w-full mx-auto border gap-2 lg:gap-0 flex-col lg:flex-row">
@@ -263,6 +268,9 @@ export default function ExpiryItemsReminder({
           <p className="text-gray-500">Chọn một sản phẩm để xem chi tiết</p>
         )}
       </div>
+      {toast && (
+        <ToastNotification message={toast.message} keyword={toast.keyword} />
+      )}
     </div>
   );
 }
