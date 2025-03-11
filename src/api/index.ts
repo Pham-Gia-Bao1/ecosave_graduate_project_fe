@@ -615,7 +615,11 @@ export async function getSaveProductOfUser(userId: number): Promise<string[] | n
       headers: { Authorization: `Bearer ${token}` },
     });
 
+    console.log(response)
+    console.log(response.data)
+
     if (response.data.success) {
+
       const productIds = response.data.products.map((p) => p.code);
       console.log("✅ Product IDs:", productIds);
 

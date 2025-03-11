@@ -161,7 +161,7 @@ export interface PaymentState {
 export interface OrderItem {
   product_id: number;
   product_name: string;
-  product_image: string[]; 
+  product_image: string[];
   quantity: number;
   sub_price: number;
   unique_price: number;
@@ -176,7 +176,7 @@ export interface OrderData {
   saved_amount: number;
   status: "pending | completed" | "cancelled";
   order_date: Date;
-  items: OrderItem[]; 
+  items: OrderItem[];
 }
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -187,44 +187,45 @@ export interface ApiResponse<T = any> {
 export type ProductScan = {
   _id: string;
   title: string;
-  description: string;
-  category: string;
-  price: number;
-  discountPercentage: number;
-  rating: number;
-  stock: number;
-  tags: string[];
-  brand: string;
-  sku: string;
-  weight: number;
-  dimensions: {
-    width: number;
-    height: number;
-    depth: number;
+  description?: string;
+  category?: string;
+  price?: number;
+  discountPercentage?: number;
+  rating?: number;
+  stock?: number;
+  tags?: string[];
+  brand?: string;
+  sku?: string;
+  weight?: number;
+  dimensions?: {
+    width?: number;
+    height?: number;
+    depth?: number;
   };
-  warrantyInformation: string;
-  shippingInformation: string;
-  availabilityStatus: string;
-  manufacturingDate: string;
+  warrantyInformation?: string;
+  shippingInformation?: string;
+  availabilityStatus?: string;
+  manufacturingDate?: string;
   expiryDate: string;
-  reviews: {
-    rating: number;
-    comment: string;
-    date: string;
-    reviewerName: string;
-    reviewerEmail: string;
+  reviews?: {
+    rating?: number;
+    comment?: string;
+    date?: string;
+    reviewerName?: string;
+    reviewerEmail?: string;
   }[];
-  returnPolicy: string;
-  minimumOrderQuantity: number;
-  meta: {
-    createdAt: string;
-    updatedAt: string;
-    barcode: string;
-    qrCode: string;
+  returnPolicy?: string;
+  minimumOrderQuantity?: number;
+  meta?: {
+    createdAt?: string;
+    updatedAt?: string;
+    barcode?: string | null;
+    qrCode?: string | null;
   };
-  thumbnail: string;
-  images: string[];
+  thumbnail?: string;
+  images: string[]; // Giữ nguyên images là bắt buộc
 };
+
 export interface ScanProductInfoProps {
   barcode: string;
   setProductForAiGenerate: (product: ProductScan | null) => void;
