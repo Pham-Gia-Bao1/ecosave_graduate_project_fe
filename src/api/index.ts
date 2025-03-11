@@ -2,6 +2,7 @@ import { AppDispatch } from '@/redux/store';
 import { setUser } from '@/redux/userSlice';
 import {  Category, FormData, Product, ProductFilters, Store } from '@/types';
 import axios from 'axios';
+import { redirect } from 'next/navigation';
 const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 const MAP_KEY = process.env.NEXT_PUBLIC_MAP_KEY;
 // Fetch the CSRF token

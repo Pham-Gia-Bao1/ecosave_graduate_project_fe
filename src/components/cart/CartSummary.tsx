@@ -4,23 +4,23 @@ import { formatMoney } from "@/utils";
 
 export const CartSummary: React.FC<CartSummaryProps> = memo(({ total, savings, handlePayment }) => {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <div className="p-6">
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between">
-            <span className="font-medium text-lg">Thành tiền:</span>
-            <span className="font-medium text-2xl text-red-500">
-              {formatMoney(total, "đ")}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 text-[17px]">Bạn tiết kiệm được:</span>
-            <span className="font-semibold text-xl">
-              {formatMoney(savings, "đ")}
-            </span>
-          </div>
+    <div className="p-6 bg-gray-50 border-l">
+      <h3 className="text-lg font-semibold mb-4">Tổng quan</h3>
+      <div className="space-y-2 mb-6">
+        <div className="flex justify-between">
+          <span>Tổng tiền hàng:</span>
+          <span> {formatMoney(total, "đ")}</span>
         </div>
-        <div>
+        <div className="flex justify-between">
+          <span>Bạn tiết kiệm được:</span>
+          <span> {formatMoney(savings, "đ")}</span>
+        </div>
+        <div className="flex justify-between font-semibold text-lg">
+          <span>Thành tiền:</span>
+          <span className="font-medium text-2xl text-red-500">{formatMoney(total, "đ")}</span>
+        </div>
+      </div>
+      <div>
           <button
             onClick={handlePayment}
             disabled={total === 0}
@@ -33,7 +33,6 @@ export const CartSummary: React.FC<CartSummaryProps> = memo(({ total, savings, h
             Đặt hàng
           </button>
         </div>
-      </div>
     </div>
   );
 });

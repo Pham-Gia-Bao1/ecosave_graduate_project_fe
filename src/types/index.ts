@@ -158,12 +158,25 @@ export interface PaymentItem {
 export interface PaymentState {
   items: PaymentItem[];
 }
+export interface OrderItem {
+  product_id: number;
+  product_name: string;
+  product_image: string[]; 
+  quantity: number;
+  sub_price: number;
+  unique_price: number;
+}
+
 export interface OrderData {
-  user_id: number;
   store_id: number;
-  total_price: number;
-  status: "completed" | "cancelled";
+  store_name: string;
+  order_id: number;
   order_code: string;
+  total_price: number;
+  saved_amount: number;
+  status: "pending | completed" | "cancelled";
+  order_date: Date;
+  items: OrderItem[]; 
 }
 export interface ApiResponse<T = any> {
   success: boolean;
