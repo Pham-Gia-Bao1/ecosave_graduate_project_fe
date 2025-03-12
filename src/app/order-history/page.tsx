@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { getUserOrders } from "@/api"
-import type { OrderData } from "@/types" 
+import type { OrderData } from "@/types"
 import { formatMoney } from "@/utils"
+type StoreData = {
+  store_id:  number;
+  store_name: string;
+  orders: OrderData[];
+};
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<OrderData[]>([])
@@ -19,21 +24,23 @@ export default function OrderHistory() {
 
         if (response && response.status === "success" && response.data) {
           // Chuyển đổi cấu trúc dữ liệu từ API sang định dạng phẳng để hiển thị
-          const flattenedOrders: OrderData[] = []
+          const flattenedOrders: OrderData[] = [];
 
           // Lặp qua từng cửa hàng
           Object.values(response.data).forEach((storeData) => {
+            const store = storeData as StoreData; // Type assertion
+
             // Lặp qua từng đơn hàng trong cửa hàng
-            storeData.orders.forEach((order) => {
+            store.orders.forEach((order) => {
               flattenedOrders.push({
                 ...order,
-                store_id: storeData.store_id,
-                store_name: storeData.store_name,
-                total_price: Number.parseFloat(order.total_price),
+                store_id: store.store_id,
+                store_name: store.store_name,
+                total_price: order.total_price,
                 order_date: new Date(order.order_date),
-              })
-            })
-          })
+              });
+            });
+          });
 
           setOrders(flattenedOrders)
         } else {
@@ -50,16 +57,17 @@ export default function OrderHistory() {
     fetchOrders()
   }, [])
 
-  const calculateDiscount = (order) => {
+  const calculateDiscount = (order: OrderData) => {
     return order.items.reduce((totalDiscount, item) => {
-      const originalPrice = item.original_price * item.quantity;
-      const discountedPrice = item.unique_price * item.quantity;
-      return totalDiscount + (originalPrice - discountedPrice);
-    }, 0);
-  };
+      const originalPrice = Number.parseInt(item.original_price ?? "0") * item.quantity
+      const discountedPrice = (item.unique_price ?? 0) * item.quantity
+      return totalDiscount + (originalPrice - discountedPrice)
+    }, 0)
+  }
+
 
   // Map status code to display text
-  const getStatusDisplay = (status: "pending | completed" | "cancelled") => {
+  const getStatusDisplay = (status: string) => {
     if (status === "completed") {
       return "Đã nhận hàng thành công"
     } else if (status === "pending") {
@@ -71,7 +79,7 @@ export default function OrderHistory() {
   }
 
   // Get status style based on status
-  const getStatusStyle = (status: "pending | completed" | "cancelled") => {
+  const getStatusStyle = (status: string) => {
     if (status === "completed") {
       return "bg-green-100 text-green-800"
     } else if (status === "pending") {
@@ -81,6 +89,7 @@ export default function OrderHistory() {
     }
     return ""
   }
+
 
   if (isLoading) {
     return (

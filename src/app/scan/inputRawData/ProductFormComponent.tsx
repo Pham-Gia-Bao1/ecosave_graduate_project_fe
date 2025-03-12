@@ -334,14 +334,16 @@ export default function ProductFormComponent() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md"
+              className="relative bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg"
             >
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition-colors"
+                className="absolute top-4 right-4 text-gray-300 z-20 hover:text-red-600 transition-colors"
               >
                 <AiOutlineClose className="text-xl" />
               </button>
+
+
               <div className="flex flex-col items-center gap-6">
                 <Image
                   src={LOGO.src}

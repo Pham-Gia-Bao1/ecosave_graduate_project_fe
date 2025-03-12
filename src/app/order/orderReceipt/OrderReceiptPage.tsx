@@ -52,7 +52,7 @@ const OrderReceipt = () => {
         const storedOrderData = getCookie("orderData");
         if (!storedOrderData) return;
         const orderDataObject = JSON.parse(storedOrderData);
-        orderDataObject.status = "completed";
+        orderDataObject.status = "pending";
         const orderStore = await getStoreById(Number(orderDataObject.store_id));
         setStore(orderStore);
         document.cookie = `storeLocation=${encodeURIComponent(

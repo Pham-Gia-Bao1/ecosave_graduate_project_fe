@@ -13,6 +13,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 const realTimeServerURL = "http://localhost:4000";
+import { motion } from "framer-motion";
 interface Notification {
   event: string;
   data: { product: Product };
@@ -102,11 +103,13 @@ export default function NotificationsComponent() {
             }
           : n
       );
-      localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+      localStorage.setItem(
+        "notifications",
+        JSON.stringify(updatedNotifications)
+      );
       return updatedNotifications;
     });
   };
-
 
   // 🛑 Xóa thông báo khỏi localStorage khi sản phẩm bị xóa
   const removeNotification = (productId: number) => {
@@ -186,7 +189,14 @@ export default function NotificationsComponent() {
           {storeNotifications
             .slice(0, visibleCount)
             .map(({ store, products }) => (
-              <li key={store.id} className="border-b py-4 last:border-b-0">
+              <motion.li
+                key={store.id}
+                initial={{ opacity: 0, x: 50 }} // Xuất hiện từ phải
+                animate={{ opacity: 1, x: 0 }} // Hiện tại vị trí bình thường
+                exit={{ opacity: 0, x: -50 }} // Ẩn đi về bên trái
+                transition={{ type: "spring", stiffness: 80, damping: 14 }} // Mượt hơn
+                className="border-b py-4 last:border-b-0"
+              >
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleStore(store.id)}
@@ -243,8 +253,16 @@ export default function NotificationsComponent() {
                 {expandedStores[store.id] && (
                   <ul className="mt-3 space-y-2">
                     {products.map((product) => (
-                      <li
+                      <motion.li
                         key={product.id}
+                        initial={{ opacity: 0, x: 50 }} // Xuất hiện từ phải
+                        animate={{ opacity: 1, x: 0 }} // Hiện tại vị trí bình thường
+                        exit={{ opacity: 0, x: -50 }} // Ẩn đi về bên trái
+                        transition={{
+                          type: "spring",
+                          stiffness: 80,
+                          damping: 14,
+                        }} // Mượt hơn
                         className="flex items-center gap-3 border-l-2 pl-4 hover:bg-gray-100 p-2 rounded-lg"
                       >
                         <Link
@@ -288,11 +306,11 @@ export default function NotificationsComponent() {
                         >
                           <DeleteIcon fontSize="small" />
                         </button>
-                      </li>
+                      </motion.li>
                     ))}
                   </ul>
                 )}
-              </li>
+              </motion.li>
             ))}
         </ul>
       )}
