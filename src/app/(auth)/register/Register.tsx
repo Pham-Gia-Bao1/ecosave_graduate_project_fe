@@ -7,7 +7,14 @@ import "./register.css";
 import bgIcon from "../../../assets/images/auth/bg-circle.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { checkEmail, getAddressFromCoordinates, getCSRF, getLatLng, logIn, register } from "@/api";
+import {
+  checkEmail,
+  getAddressFromCoordinates,
+  getCSRF,
+  getLatLng,
+  logIn,
+  register,
+} from "@/api";
 import ToastNotification from "@/components/toast/ToastNotification";
 import AddressInput from "@/components/input/AddressInput";
 import { FiEye, FiEyeOff } from "react-icons/fi"; // Import the eye icons
@@ -16,6 +23,7 @@ import { useDispatch } from "react-redux";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebaseConfig";
 import { setUser } from "@/redux/userSlice";
+import { AiOutlineArrowLeft } from "react-icons/ai";
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +34,7 @@ const Register: React.FC = () => {
     address: "",
     latitude: "",
     longitude: "",
-    avatar : "",
+    avatar: "",
     role_id: 2, // Default is customer
   });
   const router = useRouter();
@@ -43,7 +51,7 @@ const Register: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const dispatch = useDispatch();
 
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -84,7 +92,8 @@ const Register: React.FC = () => {
       if (location && location.lat && location.lng) {
         formData.latitude = location.lat;
         formData.longitude = location.lng;
-        formData.avatar = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQct7GVODYZLmiBWG1WRsQ9ekyJLTLT-o2CMQ&s";
+        formData.avatar =
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQct7GVODYZLmiBWG1WRsQ9ekyJLTLT-o2CMQ&s";
         try {
           const response = await register(formData);
           console.log(response);
@@ -122,75 +131,75 @@ const Register: React.FC = () => {
   };
 
   const handleSignInWithGoogle = async () => {
-      try {
-        setLoading(true);
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
+    try {
+      setLoading(true);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
 
-        if (!user?.email) {
-          setErrorMessage("Email không tồn tại trong tài khoản Google.");
+      if (!user?.email) {
+        setErrorMessage("Email không tồn tại trong tài khoản Google.");
+        return;
+      }
+      const generatedPassword = user.uid.slice(0, 10); // Lấy 10 ký tự đầu từ UID
+      const checkResponse = await checkEmail(user.email);
+
+      if (checkResponse) {
+        const csrfToken = await getCSRF();
+        const data = await logIn(user.email, generatedPassword, csrfToken);
+        storeUserData(data);
+      } else {
+        const locationData = localStorage.getItem("user_location");
+        const [latitude, longitude] = locationData
+          ? JSON.parse(locationData)
+          : [null, null];
+
+        if (!latitude || !longitude) {
+          setErrorMessage("Không thể lấy tọa độ vị trí.");
           return;
         }
-        const generatedPassword = user.uid.slice(0, 10); // Lấy 10 ký tự đầu từ UID
-        const checkResponse = await checkEmail(user.email);
 
-        if (checkResponse) {
-          const csrfToken  = await getCSRF()
+        const address = await getAddressFromCoordinates(latitude, longitude);
+
+        const formData: FormData = {
+          name: user.displayName || "Người dùng Google",
+          email: user.email,
+          password: generatedPassword,
+          password_confirmation: generatedPassword,
+          address,
+          latitude,
+          longitude,
+          avatar: user?.photoURL,
+          role_id: 2,
+        };
+
+        const res = await register(formData);
+        if (res?.data?.user) {
+          const csrfToken = await getCSRF();
           const data = await logIn(user.email, generatedPassword, csrfToken);
           storeUserData(data);
         } else {
-
-          const locationData = localStorage.getItem("user_location");
-          const [latitude, longitude] = locationData ? JSON.parse(locationData) : [null, null];
-
-          if (!latitude || !longitude) {
-            setErrorMessage("Không thể lấy tọa độ vị trí.");
-            return;
-          }
-
-          const address = await getAddressFromCoordinates(latitude, longitude);
-
-          const formData: FormData = {
-            name: user.displayName || "Người dùng Google",
-            email: user.email,
-            password: generatedPassword,
-            password_confirmation: generatedPassword,
-            address,
-            latitude,
-            longitude,
-            avatar : user?.photoURL,
-            role_id: 2,
-          };
-
-          const res = await register(formData);
-          if (res?.data?.user) {
-            const csrfToken = await getCSRF();
-            const data = await logIn(user.email, generatedPassword, csrfToken);
-            storeUserData(data);
-          } else {
-            setErrorMessage("Đăng ký thất bại, vui lòng thử lại.");
-          }
+          setErrorMessage("Đăng ký thất bại, vui lòng thử lại.");
         }
-        setLoading(false);
-
-      } catch (error) {
-        console.error("Lỗi khi đăng nhập với Google:", error);
-        setErrorMessage("Đã xảy ra lỗi, vui lòng thử lại sau.");
       }
-    };
+      setLoading(false);
+    } catch (error) {
+      console.error("Lỗi khi đăng nhập với Google:", error);
+      setErrorMessage("Đã xảy ra lỗi, vui lòng thử lại sau.");
+    }
+  };
 
-      const storeUserData = (data: any) => {
-        if (data) {
-          const { access_token, refresh_token, user } = data;
-          localStorage.setItem("access_token", access_token);
-          localStorage.setItem("refresh_token", refresh_token);
-          dispatch(setUser(user));
-          document.cookie = `authToken=${access_token}; path=/; secure`;
-          router.push("/"); // Redirect to homepage
-        } else {
-          setErrorMessage("Dữ liệu không hợp lệ, vui lòng thử lại.");
-        }
-      };
+  const storeUserData = (data: any) => {
+    if (data) {
+      const { access_token, refresh_token, user } = data;
+      localStorage.setItem("access_token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
+      dispatch(setUser(user));
+      document.cookie = `authToken=${access_token}; path=/; secure`;
+      router.push("/"); // Redirect to homepage
+    } else {
+      setErrorMessage("Dữ liệu không hợp lệ, vui lòng thử lại.");
+    }
+  };
   return (
     <motion.div
       className="flex flex-col md:flex-row w-full min-h-screen"
@@ -217,6 +226,12 @@ const Register: React.FC = () => {
           </h2>
         </div>
       </motion.div>
+      <Link
+        href="/"
+        className="absolute z-50 top-3 right-[42%] flex items-center gap-1 text-gray-500  hover:text-primary  transition-all duration-300"
+      >
+        <AiOutlineArrowLeft className="text-lg" /> Về trang chủ
+      </Link>
       <div className="flex items-center justify-center flex-1 bg-white">
         {/* Form Box */}
         <motion.div
@@ -225,21 +240,7 @@ const Register: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Image
-            src={bgIcon.src}
-            width={300}
-            height={300}
-            alt="background login image"
-            className="bg-image hidden lg:block absolute right-[-300px]"
-          />
-          <Image
-            src={bgIcon.src}
-            width={300}
-            height={300}
-            alt="background login image"
-            className="bg-image hidden lg:block absolute left-[-300px] bottom-0"
-          />
-          <h1 className="text-4xl font-bold text-gray-800">
+          <h1 className="text-4xl font-bold text-gray-800 text-center">
             Eco<span className="text-primary-light">Save</span>
           </h1>
           <p className="text-center text-sm text-gray-500 mb-4">
@@ -250,7 +251,7 @@ const Register: React.FC = () => {
           </p>
           {/* Google Login Button */}
           <div className="mb-4">
-            <LoginWithGoogleButton />
+            <LoginWithGoogleButton handleRegister={handleSignInWithGoogle} />
           </div>
           <p className="text-center text-sm text-gray-500 mb-4">
             Hoặc đăng ký với

@@ -10,13 +10,13 @@ import {
 } from "react-icons/ai";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { increment } from "@/redux/cartSlice";
+import { increment, setTotalItems } from "@/redux/cartSlice";
 import { useParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import fallbackImage from "../../assets/images/products/product1.png";
 import { Product } from "@/types";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { getProducts, addToCart } from "@/api";
+import { getProducts, addToCart, getCart } from "@/api";
 import ToastNotification from "../toast/ToastNotification";
 import calculateDistance from "@/utils/calculateDistance";
 import { formatMoney } from "@/utils";
@@ -113,7 +113,8 @@ export default function Products({
         message: result.message,
         keyword: result.success ? "SUCCESS" : "ERROR",
       });
-      dispatch(increment());
+      const cart = await getCart();
+      dispatch(setTotalItems(cart.data.total_items));
       setLoading((prev) => ({ ...prev, [product.id]: false }));
       setTimeout(() => setToast(null), TOAST_DURATION);
     },
@@ -174,12 +175,19 @@ export default function Products({
           <div className="flex-1 text-gray-500 flex justify-end gap-3 items-center">
             <p className="text-sm truncate">
               {userLocation
-                ? `${calculateDistance(
-                    [product.store.latitude, product.store.longitude],
-                    userLocation
-                  )} km`
+                ? (() => {
+                    const distance = calculateDistance(
+                      [product.store.latitude, product.store.longitude],
+                      userLocation
+                    );
+
+                    return distance < 1
+                      ? `${(distance * 1000).toFixed(0)}m`
+                      : `${distance.toFixed(2)} km`;
+                  })()
                 : "Không có thông tin vị trí"}
             </p>
+
             <div className="w-[1px] h-[70%] bg-gray-400" />
             <p className="text-sm max-w-[60px] truncate">
               {product.store.store_name}
@@ -192,9 +200,14 @@ export default function Products({
           </h3>
         </Link>
         <div className="flex justify-between items-center">
-          <p className="text-primary-light font-bold">
-            {formatMoney(Number(product.original_price), "VND")}
-          </p>
+          <div className="flex">
+            <p className="text-primary-light font-bold mr-2">
+              {formatMoney(Number(product.discounted_price), "VND")}
+            </p>
+            <p className="text-gray-500 font-bold line-through">
+              {formatMoney(Number(product.original_price), "VND")}
+            </p>
+          </div>
           <div className="flex items-center gap-1">
             {product.rating}{" "}
             <AiFillStar className="text-yellow-400" size={16} />
@@ -281,9 +294,7 @@ export default function Products({
             onChange={(e) => handleSearchProduct(e.target.value)}
             type="text"
             placeholder="Tìm kiếm..."
-            className={`search-input text-black ${
-              searchQuery ? "open" : ""
-            }`}
+            className={`search-input text-black ${searchQuery ? "open" : ""}`}
           />
         </div>
       </div>

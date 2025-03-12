@@ -131,6 +131,31 @@ const CartPage: React.FC = () => {
         (Number(item.original_price) * item.quantity - Number(item.subtotal)),
       0
     );
+  // const handlePayment = async () => {
+  //   const outOfStockItems = cartItems.filter(item => item.stock_quantity <= 0);
+  //   if (outOfStockItems.length > 0) {
+  //     setToast({
+  //       message: `${outOfStockItems.map(item => item.name).join(", ")} hiện tại đang hết hàng. Hãy xóa sản phẩm đó hoặc chờ sản phẩm có lại hàng để tiếp tục.`,
+  //       keyword: "ERROR",
+  //     });
+  //     setTimeout(() => setToast(null), TOAST_DURATION);
+  //     return;
+  //   }
+  //   cartItems.forEach((product) => {
+  //     const paymentProductItem: PaymentItem = {
+  //       id: product.product_id,
+  //       name: product.name,
+  //       price: product.discounted_price,
+  //       quantity: product.quantity,
+  //       picture: product.images[0].image_url,
+  //       storeId: storeId ?? 1,
+  //     };
+  //     dispatch(clearPaymentItems());
+  //     dispatch(addPaymentItem(paymentProductItem));
+  //   });
+  //   router.push("/checkout");
+  // };
+
   const handlePayment = async () => {
     const outOfStockItems = cartItems.filter(item => item.stock_quantity <= 0);
     if (outOfStockItems.length > 0) {
@@ -141,20 +166,19 @@ const CartPage: React.FC = () => {
       setTimeout(() => setToast(null), TOAST_DURATION);
       return;
     }
-    cartItems.forEach((product) => {
-      const paymentProductItem: PaymentItem = {
-        id: product.product_id,
-        name: product.name,
-        price: product.discounted_price,
-        quantity: product.quantity,
-        picture: product.images[0].image_url,
-        storeId: storeId ?? 1,
-      };
-      dispatch(clearPaymentItems());
-      dispatch(addPaymentItem(paymentProductItem));
-    });
+    dispatch(clearPaymentItems())
+    const paymentItems: PaymentItem[] = cartItems.map((product) => ({
+      id: product.product_id,
+      name: product.name,
+      price: product.discounted_price,
+      quantity: product.quantity,
+      picture: product.images[0].image_url,
+      storeId: storeId ?? 1,
+    }));
+    paymentItems.forEach((item) => dispatch(addPaymentItem(item)));
     router.push("/checkout");
   };
+
   
   if (loading) {
     return (
@@ -224,7 +248,7 @@ const CartPage: React.FC = () => {
               Giỏ hàng của bạn đang trống.
             </p>
             <Link
-              href="/products"
+              href="/cart"
               className="inline-flex items-center justify-center bg-teal-500 hover:bg-teal-600 text-white py-3 px-8 rounded-full transition-colors duration-300 text-lg font-medium"
             >
               <ArrowLeft className="mr-2" /> Tiếp tục mua sắm
