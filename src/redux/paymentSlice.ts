@@ -11,7 +11,10 @@ export const paymentSlice = createSlice({
   initialState,
   reducers: {
     addPaymentItem: (state, action: PayloadAction<PaymentItem>) => {
-      state.items.push(action.payload);
+      const isExist = state.items.some(item => item.id === action.payload.id);
+      if (!isExist) {
+        state.items.push(action.payload);
+      }
     },
     clearPaymentItems: (state) => {
       state.items = [];

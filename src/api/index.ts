@@ -496,7 +496,7 @@ export interface OrderData {
   status: "pending" | "completed"; // Enum-like constraint
   order_code: string;
 }
-export const createNewOrder = async (orderData: OrderData): Promise<number | null> => {
+export const createNewOrder = async (orderData: OrderData): Promise<OrderData | null> => {
   const token = localStorage.getItem("access_token");
   if (!token) {
     return null; // Return null if no token is found
@@ -513,7 +513,7 @@ export const createNewOrder = async (orderData: OrderData): Promise<number | nul
       }
     );
     console.log("Order created successfully:", res.data);
-    return res.data.data.id; // Return response data
+    return res.data.data; // Return response data
   } catch (error) {
     console.error("Error creating order:", error);
     throw error; // Rethrow for handling in the calling function
