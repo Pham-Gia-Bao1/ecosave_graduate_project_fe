@@ -123,7 +123,12 @@ const CartPage: React.FC = () => {
       0
     );
   const handlePayment = async () => {
-    cartItems.forEach((product) => {
+    const isOutOfStockItems = cartItems.filter((product) => product.stock_quantity === 0);
+    if (isOutOfStockItems.length > 0) {
+      const productNames = isOutOfStockItems.map((p) => p.name).join(", ");
+      setError(`Vui lòng xóa ${productNames} hoặc chờ sản phẩm có hàng lại để thanh toán.`);
+    }
+    else{cartItems.forEach((product) => {
       const paymentProductItem: PaymentItem = {
         id: product.product_id,
         name: product.name,
@@ -135,7 +140,7 @@ const CartPage: React.FC = () => {
       dispatch(clearPaymentItems());
       dispatch(addPaymentItem(paymentProductItem));
     });
-    router.push("/checkout");
+    router.push("/checkout");}
   };
   if (loading) {
     return (

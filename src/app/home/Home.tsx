@@ -96,7 +96,7 @@ export default function Home({
           <div className="mt-6 flex space-x-4">
             <Link href="/products">
               <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light">
-                Đến sản phẩm
+                Xem sản phẩm
               </button>
             </Link>
             <Link href="/map">
