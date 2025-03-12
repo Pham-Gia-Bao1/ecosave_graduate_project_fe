@@ -69,9 +69,13 @@ const MapListing = ({
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold text-lg mb-1">
                         {listing.store_name}
-                      </h3>{" "}
+                      </h3>
                       <p className="text-sm font-medium text-gray-700">
-                        📍 {listing.distance.toFixed(2)} km gần bạn
+                        📍
+                        {listing.distance < 1
+                          ? `${(listing.distance * 1000).toFixed(0)}m `
+                          : `${listing.distance.toFixed(2)} km `}
+                        gần bạn
                       </p>
                     </div>
                     <p className="text-xs text-gray-500 mb-1">
@@ -80,9 +84,12 @@ const MapListing = ({
                     <p className="text-sm text-gray-600 mb-1">
                       {listing.address}
                     </p>
-                    <p className="text-xs mb-1 truncate-description-2-line">{listing.description}</p>
+                    <p className="text-xs mb-1 truncate-description-2-line">
+                      {listing.description}
+                    </p>
                     <p className="text-xs text-gray-500 mb-2">
-                      📧 {listing.contact_email} | 📞 {listing.contact_phone} | {listing.opening_hours}
+                      📧 {listing.contact_email} | 📞 {listing.contact_phone} |
+                      {listing.opening_hours}
                     </p>
                   </div>
                 </div>

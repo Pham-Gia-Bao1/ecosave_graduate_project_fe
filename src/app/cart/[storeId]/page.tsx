@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { getCartDetail, updateCartItemQuantity, removeCartItem } from "@/api";
+import { getCartDetail, updateCartItemQuantity, removeCartItem, getCart } from "@/api";
 import React, { useEffect, useState, useCallback } from "react";
 import { debounce } from "lodash";
 import type { CartProduct, PaymentItem } from "@/types";
@@ -13,6 +13,7 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { addPaymentItem, clearPaymentItems } from "@/redux/paymentSlice";
 import Loading from "@/app/loading";
+import { setTotalItems } from "@/redux/cartSlice";
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartProduct[]>([]);
   const [cartData, setCartData] = useState<any>(null);
@@ -69,11 +70,20 @@ const CartPage: React.FC = () => {
           item.product_id === productId ? { ...item, isRemoving: true } : item
         )
       );
+
       try {
         await removeCartItem(storeId, productId);
-        setCartItems((prevItems) =>
-          prevItems.filter((item) => item.product_id !== productId)
-        );
+
+        setCartItems((prevItems) => {
+          const updatedItems = prevItems.filter(
+            (item) => item.product_id !== productId
+          );
+          return updatedItems;
+        });
+        const cart = await getCart();
+     
+        dispatch(setTotalItems(cart.data.total_items));
+
       } catch (error) {
         console.error("Failed to remove item:", error);
         setCartItems((prevItems) =>
@@ -86,8 +96,9 @@ const CartPage: React.FC = () => {
         setError("Không thể xóa sản phẩm. Vui lòng thử lại.");
       }
     },
-    [storeId]
+    [storeId, dispatch]
   );
+
   const fetchCart = useCallback(async () => {
     if (!storeId) {
       setError("Store ID không hợp lệ.");
@@ -122,21 +133,19 @@ const CartPage: React.FC = () => {
         (Number(item.original_price) * item.quantity - Number(item.subtotal)),
       0
     );
-  const handlePayment = async () => {
-    cartItems.forEach((product) => {
-      const paymentProductItem: PaymentItem = {
+    const handlePayment = async () => {
+      const paymentItems: PaymentItem[] = cartItems.map((product) => ({
         id: product.product_id,
         name: product.name,
         price: product.discounted_price,
         quantity: product.quantity,
         picture: product.images[0].image_url,
         storeId: storeId ?? 1,
-      };
-      dispatch(clearPaymentItems());
-      dispatch(addPaymentItem(paymentProductItem));
-    });
-    router.push("/checkout");
-  };
+      }));
+      paymentItems.forEach((item) => dispatch(addPaymentItem(item)));
+      router.push("/checkout");
+    };
+
   if (loading) {
     return (
       <Loading />
@@ -207,7 +216,7 @@ const CartPage: React.FC = () => {
         )}
       </div>
     </div>
-    
+
   );
 };
 export default CartPage;
