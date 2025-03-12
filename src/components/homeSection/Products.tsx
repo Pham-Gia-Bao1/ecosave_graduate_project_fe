@@ -21,6 +21,7 @@ import ToastNotification from "../toast/ToastNotification";
 import calculateDistance from "@/utils/calculateDistance";
 import { formatMoney } from "@/utils";
 import SubLoading from "../loading/subLoading";
+import { motion } from "framer-motion";
 // Constants
 const ITEMS_PER_PAGE = 8;
 const DEBOUNCE_DELAY = 500;
@@ -136,10 +137,13 @@ export default function Products({
       ))}
     </div>
   );
-  // Render product card
+
   const renderProductCard = (product: Product) => (
-    <div
-    data-aos="fade-up"
+    <motion.div
+      initial={{ opacity: 0, y: -5, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, x: -10, scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 80, damping: 16 }}
       key={product.id}
       className="relative rounded-lg shadow-soft bg-white pb-5 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
     >
@@ -223,8 +227,9 @@ export default function Products({
           )}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
+
   // Render pagination
   const renderPagination = () => (
     <div className="flex justify-center mt-4">
@@ -276,7 +281,7 @@ export default function Products({
             onChange={(e) => handleSearchProduct(e.target.value)}
             type="text"
             placeholder="Tìm kiếm..."
-            className={`search-input text-secondary-dark ${
+            className={`search-input text-black ${
               searchQuery ? "open" : ""
             }`}
           />

@@ -8,8 +8,9 @@ import { ProductScan } from "@/types";
 import { getProductsByIds } from "@/api/scan";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import {  getSaveProductOfUserId } from "@/api";
+import { getSaveProductOfUserId } from "@/api";
 import Loading from "../loading";
+import { AiOutlineInbox } from "react-icons/ai";
 
 export default function ExpiryPage() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function ExpiryPage() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log(user?.id)
+    console.log(user?.id);
     if (user?.id) {
       setLoading(true);
       getSaveProductOfUserId(user.id)
@@ -44,7 +45,15 @@ export default function ExpiryPage() {
       <h1 className="text-xl font-bold">Các sản phẩm đã lưu để nhắc nhở</h1>
       {loading && <Loading />}
       {!loading && products && <ExpiryItemsReminder products={products} />}
-      {!loading && !products && <p>Không tìm thấy sản phẩm đã lưu</p>}
+      {!loading && (!products || products.length === 0) && (
+        <div className="flex flex-col items-center justify-center h-60 text-gray-500">
+          <AiOutlineInbox className="text-5xl mb-2" />
+          <p className="text-lg font-medium">Không tìm thấy sản phẩm đã lưu</p>
+          <span className="text-sm">
+            Hãy thêm sản phẩm vào danh sách lưu để theo dõi nhé!
+          </span>
+        </div>
+      )}
     </div>
   );
 }
