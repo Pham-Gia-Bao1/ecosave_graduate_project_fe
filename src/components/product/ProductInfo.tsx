@@ -21,7 +21,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
     message: string;
     keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
   } | null>(null);
-
+  const TOAST_DURATION = 3000;
+  
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("vi-VN", {
       year: "numeric",
@@ -42,9 +43,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
   );
 
   const handleAddToCart = async () => {
+    if (product.stock_quantity <= 0) {
+      setToast({
+        message: "Sản phẩm đang hết hàng, vui lòng thêm sản phẩm này sau!",
+        keyword: "ERROR",
+      });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
     try {
       const result = await addToCart(product.id, quantity);
-      
       if (result.success) {
         setToast({
           message: result.message,
@@ -70,13 +78,21 @@ export function ProductInfo({ product }: ProductInfoProps) {
   };
 
   const handlyPayOneProduct = () => {
-     if (!user) {
+    if (!user) {
+    setToast({
+      message: "Vui lòng đăng nhập trước khi mua sản phẩm!",
+      keyword: "WARNING",
+    });
+    return;
+    }
+    if (product.stock_quantity <= 0) {
       setToast({
-        message: "Vui lòng đăng nhập trước khi mua sản phẩm!",
-        keyword: "WARNING",
+        message: `Hiện tại sản phẩm này đang hết hàng. Hãy xóa sản phẩm này hoặc chờ sản phẩm có lại hàng để tiếp tục.`,
+        keyword: "ERROR",
       });
+      setTimeout(() => setToast(null), TOAST_DURATION);
       return;
-      }
+    }
     const paymentItem: PaymentItem = {
       id: product.id,
       name: product.name,

@@ -27,9 +27,10 @@ const OrderReceipt = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState<boolean>(true);
   const [urlParams] = useState<any>({});
-  const [orderId, setOrderId] = useState<number | null>(null);
+  const [orderId, setOrderId] = useState< null | string | number>(null);
   const [selectedItems, setSelectedItems] = useState<PaymentItem[]>([]);
   const router = useRouter();
+  const [orderCode, setOrderCode] = useState<string>('')
   const [toast, setToast] = useState<{
     message: string;
     keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
@@ -63,10 +64,11 @@ const OrderReceipt = () => {
           setSelectedItems(JSON.parse(orderItems));
         }
         // Tạo đơn hàng mới
-        const newOrderId = await createNewOrder(orderDataObject);
-        console.log("Order Created:", newOrderId);
-        if (newOrderId) {
-          setOrderId(newOrderId);
+        const newOrder = await createNewOrder(orderDataObject);
+        console.log("Order Created:", newOrder);
+        if (newOrder) {
+          setOrderCode(newOrder.order_code)
+          setOrderId(newOrder.id);
         }
       } catch (error) {
         console.error("Error fetching order:", error);
@@ -220,23 +222,23 @@ const OrderReceipt = () => {
             <div className="p-4 overflow-y-auto flex-grow">
               <section className="mb-4 text-sm space-y-2">
                 <p>
-                  <span className="font-semibold">Tên khách hàng:</span>{" "}
+                  <span className="font-semibold">Mã đơn hàng:</span>
+                  {orderCode || "ECOSAVE99734636"}
+                </p>
+                <p>
+                  <span className="font-semibold">Tên khách hàng:</span>
                   {user?.username || "Gia Bao"}
                 </p>
                 <p>
-                  <span className="font-semibold">ID thẻ khách hàng:</span>{" "}
-                  {user?.phone_number || "0895234734"}01822929
-                </p>
-                <p>
-                  <span className="font-semibold">Tên cửa hàng:</span>{" "}
+                  <span className="font-semibold">Tên cửa hàng:</span>
                   {store?.store_name || "Winmart Đà Nẵng"}
                 </p>
                 <p>
-                  <span className="font-semibold">Địa chỉ lấy hàng:</span>{" "}
+                  <span className="font-semibold">Địa chỉ lấy hàng:</span>
                   {store?.address || "101B Lê Hữu Trác, Đà Nẵng"}
                 </p>
                 <p>
-                  <span className="font-semibold">Ngày mua:</span>{" "}
+                  <span className="font-semibold">Ngày mua:</span>
                   {getCurrentDateTime()}
                 </p>
               </section>
