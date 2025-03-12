@@ -1,8 +1,17 @@
-const LoginWithGoogleButton: React.FC = () => {
+import React from "react";
+
+interface LoginWithGoogleButtonProps {
+  handleRegister: () => void;
+}
+
+const LoginWithGoogleButton: React.FC<LoginWithGoogleButtonProps> = ({
+  handleRegister,
+}) => {
   return (
     <button
+      onClick={handleRegister}
       aria-label="Sign in with Google"
-      className="flex items-center justify-center border border-button-border-light rounded-md p-0.5 pr-3 w-full"
+      className="flex items-center hover:bg-gray-200 justify-center border border-button-border-light rounded-md p-0.5 pr-3 w-full"
     >
       <div className="flex items-center justify-center w-9 h-9 rounded-l">
         <svg

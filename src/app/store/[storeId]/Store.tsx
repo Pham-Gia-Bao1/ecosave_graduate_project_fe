@@ -13,9 +13,13 @@ import ProductListing from "@/app/products/Products";
 interface StorePageProps {
   store: Store;
   products: Product[];
-  categories : Category[];
+  categories: Category[];
 }
-const StorePage: React.FC<StorePageProps> = ({ store, products, categories }) => {
+const StorePage: React.FC<StorePageProps> = ({
+  store,
+  products,
+  categories,
+}) => {
   const userLocation = useUserLocation();
   const getStoreStatus = () => {
     switch (store.status) {
@@ -61,12 +65,21 @@ const StorePage: React.FC<StorePageProps> = ({ store, products, categories }) =>
           <p className="flex items-center gap-3">
             <MdDirectionsWalk className="text-purple-600 text-xl" />
             {userLocation
-              ? `${calculateDistance(
-                  [store.latitude, store.longitude],
-                  userLocation
-                )} km`
+              ? (() => {
+                  const distance = calculateDistance(
+                    [store.latitude, store.longitude],
+                    userLocation
+                  );
+
+                  if (isNaN(distance)) return "Lỗi tính toán khoảng cách";
+
+                  return distance < 1
+                    ? `${(distance * 1000).toFixed(0)}m gần bạn`
+                    : `${distance.toFixed(2)} km gần bạn`;
+                })()
               : "Đang xác định khoảng cách"}
           </p>
+
           <p className="flex items-center gap-3">
             <FaMapMarkerAlt className="text-yellow-600 text-xl" />
             {store.address || "Không có địa chỉ"}

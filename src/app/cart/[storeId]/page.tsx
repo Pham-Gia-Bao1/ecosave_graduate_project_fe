@@ -81,7 +81,7 @@ const CartPage: React.FC = () => {
           return updatedItems;
         });
         const cart = await getCart();
-     
+
         dispatch(setTotalItems(cart.data.total_items));
 
       } catch (error) {
@@ -134,6 +134,7 @@ const CartPage: React.FC = () => {
       0
     );
     const handlePayment = async () => {
+      dispatch(clearPaymentItems())
       const paymentItems: PaymentItem[] = cartItems.map((product) => ({
         id: product.product_id,
         name: product.name,

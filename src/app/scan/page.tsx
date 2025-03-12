@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 const ScanComponent = () => {
   const token = getAccessToken();
+  console.log(token)
   if (!token) {
     // If no token, redirect to login
     redirect("/login");
