@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { FaTwitter, FaLinkedin } from "react-icons/fa";
-import founderGiaBao from "../../assets/images/products/product1.png";
-import founderBichQuyen from "../../assets/images/products/product2.png";
+import founderGiaBao from "../../assets/images/users/bao.jpg";
+import founderBichQuyen from "../../assets/images/users/quyen.jpg";
 import founderThiHi from "../../assets/images/products/product3.png";
 import founderThuyNgan from "../../assets/images/products/product4.png";
 
@@ -9,30 +9,30 @@ const founders = [
   {
     id: 1,
     name: "Phạm Gia Bảo",
-    role: "Full-Stack Developer",
+    role: "CTO, Tech Lead",
     description:
-      "Cựu đồng sáng lập của DynoStars. Nhân viên ban đầu tại Spotify và EcoSave.",
+      "bao.pham@ecosave.com",
     image: founderGiaBao,
   },
   {
     id: 2,
     name: "Lê Thị Bích Quyên",
-    role: "Director, Business Analytics and Planning",
-    description: "Dẫn dắt các nhóm kỹ thuật tại Figma, Pitch và Protocol Labs.",
+    role: "Director, Business Analyst",
+    description: "quyen.le@ecosave.com",
     image: founderBichQuyen,
   },
   {
     id: 3,
     name: "Phạm Thị Hỉ",
-    role: "Career Educator",
-    description: "PM cho tuyển tính, trường Lambda và trên boong.",
+    role: "Quality Assurance Manager",
+    description: "hi.pham@ecosave.com",
     image: founderThiHi,
   },
   {
     id: 4,
     name: "Hồ Thị Ngân",
-    role: "Co-op & Internships Program & Operations Manager",
-    description: "Cựu nhà phát triển giao diện người dùng cho Linear.",
+    role: "Solution Architect",
+    description: "ngan.ho@ecosave.com",
     image: founderThuyNgan,
   },
 ];
@@ -60,28 +60,26 @@ export default function FoundersSection() {
       <h4 className="text-primary font-medium text-sm">Đại gia đình sáng lập</h4>
       <h2 className="text-3xl font-bold mt-2">Gặp gỡ các nhà sáng lập</h2>
       <p className="text-gray-600 mt-4 max-w-3xl mx-auto">
-        Chúng tôi là một đội ngũ sáng tạo và đam mê, luôn nỗ lực mang đến những
-        giải pháp tối ưu và sáng tạo nhất, kết hợp sự chuyên nghiệp và tinh thần
-        hợp tác để đạt được những thành công bền vững.
+        Chúng tôi là một đội ngũ nhiệt huyết và sáng tạo, luôn luôn nỗ lực để mang đến những
+        giải pháp tối ưu và sáng tạo nhất để mang đến những giải pháp và đóng góp có ích cho cộng đồng.
       </p>
 
       <div className="grid md:grid-cols-4 gap-6 mt-10 px-4">
         {founders.map(({ id, name, role, description, image }) => (
           <div
-          data-aos="fade-up"
+            data-aos="fade-up"
             key={id}
             className="bg-white p-6 rounded-xl border border-primary text-center transition-all duration-300 hover:shadow-lg hover:scale-105"
           >
-            <div className="w-20 h-20 mx-auto relative">
+            <div className="w-32 h-32 mx-auto relative overflow-hidden rounded-full">
               <Image
                 src={image}
                 alt={name}
-                width={80}
-                height={80}
-                className="rounded-full object-cover"
+                fill
+                className="object-cover"
                 loading="lazy"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                quality={50}
+                sizes="128px"
+                quality={75}
               />
             </div>
             <h3 className="text-lg font-bold mt-4">{name}</h3>

@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { getCartDetail, updateCartItemQuantity, removeCartItem, getCart } from "@/api";
+import { getCartDetail, updateCartItemQuantity, removeCartItem } from "@/api";
 import React, { useEffect, useState, useCallback } from "react";
 import { debounce } from "lodash";
 import type { CartProduct, PaymentItem } from "@/types";
@@ -13,7 +13,9 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { addPaymentItem, clearPaymentItems } from "@/redux/paymentSlice";
 import Loading from "@/app/loading";
-import { setTotalItems } from "@/redux/cartSlice";
+import { createPortal } from "react-dom";
+import ToastNotification from "@/components/toast/ToastNotification";
+
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartProduct[]>([]);
   const [cartData, setCartData] = useState<any>(null);
@@ -22,6 +24,12 @@ const CartPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
+  const [toast, setToast] = useState<{
+    message: string;
+    keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
+  } | null>(null);
+  const TOAST_DURATION = 3000;
+
   const storeId =
     params?.storeId && !isNaN(parseInt(params.storeId as string))
       ? parseInt(params.storeId as string)
@@ -70,20 +78,11 @@ const CartPage: React.FC = () => {
           item.product_id === productId ? { ...item, isRemoving: true } : item
         )
       );
-
       try {
         await removeCartItem(storeId, productId);
-
-        setCartItems((prevItems) => {
-          const updatedItems = prevItems.filter(
-            (item) => item.product_id !== productId
-          );
-          return updatedItems;
-        });
-        const cart = await getCart();
-
-        dispatch(setTotalItems(cart.data.total_items));
-
+        setCartItems((prevItems) =>
+          prevItems.filter((item) => item.product_id !== productId)
+        );
       } catch (error) {
         console.error("Failed to remove item:", error);
         setCartItems((prevItems) =>
@@ -96,9 +95,8 @@ const CartPage: React.FC = () => {
         setError("Không thể xóa sản phẩm. Vui lòng thử lại.");
       }
     },
-    [storeId, dispatch]
+    [storeId]
   );
-
   const fetchCart = useCallback(async () => {
     if (!storeId) {
       setError("Store ID không hợp lệ.");
@@ -133,23 +131,60 @@ const CartPage: React.FC = () => {
         (Number(item.original_price) * item.quantity - Number(item.subtotal)),
       0
     );
-    const handlePayment = async () => {
-      dispatch(clearPaymentItems())
-      const paymentItems: PaymentItem[] = cartItems.map((product) => ({
-        id: product.product_id,
-        name: product.name,
-        price: product.discounted_price,
-        quantity: product.quantity,
-        picture: product.images[0].image_url,
-        storeId: storeId ?? 1,
-      }));
-      paymentItems.forEach((item) => dispatch(addPaymentItem(item)));
-      router.push("/checkout");
-    };
+  // const handlePayment = async () => {
+  //   const outOfStockItems = cartItems.filter(item => item.stock_quantity <= 0);
+  //   if (outOfStockItems.length > 0) {
+  //     setToast({
+  //       message: `${outOfStockItems.map(item => item.name).join(", ")} hiện tại đang hết hàng. Hãy xóa sản phẩm đó hoặc chờ sản phẩm có lại hàng để tiếp tục.`,
+  //       keyword: "ERROR",
+  //     });
+  //     setTimeout(() => setToast(null), TOAST_DURATION);
+  //     return;
+  //   }
+  //   cartItems.forEach((product) => {
+  //     const paymentProductItem: PaymentItem = {
+  //       id: product.product_id,
+  //       name: product.name,
+  //       price: product.discounted_price,
+  //       quantity: product.quantity,
+  //       picture: product.images[0].image_url,
+  //       storeId: storeId ?? 1,
+  //     };
+  //     dispatch(clearPaymentItems());
+  //     dispatch(addPaymentItem(paymentProductItem));
+  //   });
+  //   router.push("/checkout");
+  // };
 
+  const handlePayment = async () => {
+    const outOfStockItems = cartItems.filter(item => item.stock_quantity <= 0);
+    if (outOfStockItems.length > 0) {
+      setToast({
+        message: `${outOfStockItems.map(item => item.name).join(", ")} hiện tại đang hết hàng. Hãy xóa sản phẩm đó hoặc chờ sản phẩm có lại hàng để tiếp tục.`,
+        keyword: "ERROR",
+      });
+      setTimeout(() => setToast(null), TOAST_DURATION);
+      return;
+    }
+    dispatch(clearPaymentItems())
+    const paymentItems: PaymentItem[] = cartItems.map((product) => ({
+      id: product.product_id,
+      name: product.name,
+      price: product.discounted_price,
+      quantity: product.quantity,
+      picture: product.images[0].image_url,
+      storeId: storeId ?? 1,
+    }));
+    paymentItems.forEach((item) => dispatch(addPaymentItem(item)));
+    router.push("/checkout");
+  };
+
+  
   if (loading) {
     return (
-      <Loading />
+      <>
+        <Loading />
+      </>
     );
   }
   if (error) {
@@ -168,6 +203,11 @@ const CartPage: React.FC = () => {
   }
   return (
     <div className="min-h-screen bg-gray-100 py-12">
+      {toast &&
+        createPortal(
+          <ToastNotification message={toast.message} keyword={toast.keyword} />,
+          document.body
+        )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-xl font-bold mb-8 text-gray-800 flex items-center">
           <ShoppingCart className="mr-3" /> Chi tiết giỏ hàng
@@ -208,7 +248,7 @@ const CartPage: React.FC = () => {
               Giỏ hàng của bạn đang trống.
             </p>
             <Link
-              href="/products"
+              href="/cart"
               className="inline-flex items-center justify-center bg-teal-500 hover:bg-teal-600 text-white py-3 px-8 rounded-full transition-colors duration-300 text-lg font-medium"
             >
               <ArrowLeft className="mr-2" /> Tiếp tục mua sắm
@@ -217,7 +257,7 @@ const CartPage: React.FC = () => {
         )}
       </div>
     </div>
-
+    
   );
 };
 export default CartPage;

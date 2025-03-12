@@ -164,7 +164,7 @@ const ShoppingCart: React.FC = () => {
                       </div>
                       <Link
                         href={`/cart/${store.store_id}`}
-                        className="bg-emerald-50 text-emerald-700 px-3 sm:px-4 py-1 sm:py-2 rounded-md hover:bg-emerald-100 transition-colors flex items-center font-medium text-sm lg:text-base whitespace-nowrap"
+                        className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors"
                       >
                         Xem chi tiết
                       </Link>
@@ -180,7 +180,7 @@ const ShoppingCart: React.FC = () => {
               </div>
               <Link
                 href="/products"
-                className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors"
+                className="bg-emerald-50 text-emerald-700 px-3 sm:px-4 py-1 sm:py-2 rounded-md hover:bg-emerald-100 transition-colors flex items-center font-medium text-sm lg:text-base whitespace-nowrap"
               >
                 Tiếp tục mua sắm
               </Link>
