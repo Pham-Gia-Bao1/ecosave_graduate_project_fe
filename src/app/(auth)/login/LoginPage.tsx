@@ -16,6 +16,7 @@ import { signIn } from "next-auth/react";
 import { loginErrors } from "../../../errorsCustome/loginErrors";
 import { auth, googleProvider } from "@/lib/firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
+import { AiOutlineArrowLeft } from "react-icons/ai";
 const Login = ({ csrf }: LoginProps) => {
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
@@ -39,7 +40,7 @@ const Login = ({ csrf }: LoginProps) => {
       setErrorMessage(null); // Reset previous errors
       try {
         const data = await logIn(email, password, csrfToken);
-        storeUserData(data)
+        storeUserData(data);
       } catch (error: any) {
         const errorCode: keyof typeof loginErrors.errors =
           error?.response?.status || 500; // Explicitly type errorCode
@@ -65,7 +66,6 @@ const Login = ({ csrf }: LoginProps) => {
     }
   };
 
-
   const handleSignInWithGoogle = async () => {
     try {
       setLoading(true);
@@ -86,7 +86,9 @@ const Login = ({ csrf }: LoginProps) => {
         console.log("Email chưa tồn tại, tiến hành đăng ký...");
 
         const locationData = localStorage.getItem("user_location");
-        const [latitude, longitude] = locationData ? JSON.parse(locationData) : [null, null];
+        const [latitude, longitude] = locationData
+          ? JSON.parse(locationData)
+          : [null, null];
 
         if (!latitude || !longitude) {
           setErrorMessage("Không thể lấy tọa độ vị trí.");
@@ -103,12 +105,12 @@ const Login = ({ csrf }: LoginProps) => {
           address,
           latitude,
           longitude,
-          avatar : user?.photoURL,
+          avatar: user?.photoURL,
           role_id: 2,
         };
 
         const res = await register(formData);
-        console.log(res)
+        console.log(res);
         if (res?.data?.user) {
           const data = await logIn(user.email, generatedPassword, csrfToken);
           storeUserData(data);
@@ -117,7 +119,6 @@ const Login = ({ csrf }: LoginProps) => {
         }
       }
       setLoading(false);
-
     } catch (error) {
       console.error("Lỗi khi đăng nhập với Google:", error);
       setErrorMessage("Đã xảy ra lỗi, vui lòng thử lại sau.");
@@ -126,6 +127,12 @@ const Login = ({ csrf }: LoginProps) => {
 
   return (
     <div className="h-screen flex flex-col lg:flex-row items-center justify-center overflow-hidden relative">
+       <Link
+        href="/"
+        className="absolute z-50 top-3 left-3 flex items-center gap-1 text-gray-500  hover:text-primary  transition-all duration-300"
+      >
+        <AiOutlineArrowLeft className="text-lg" /> Về trang chủ
+      </Link>
       <Image
         src={bgIcon.src}
         width={300}
