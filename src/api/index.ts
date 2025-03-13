@@ -339,8 +339,7 @@ export async function makeNewPayment(total: number): Promise<string> {
 export const getCart = async () => {
   const token = localStorage.getItem("access_token");
   if (!token) {
-    window.location.href = "http://localhost:3000/login";
-    return null;
+    redirect("/login")
   }
   try {
     const response = await axios.get(`${serverUrl}/cart`, {
@@ -365,6 +364,7 @@ export const getCart = async () => {
 };
 export const addToCart = async (productId: number, quantity: number) => {
   const token = localStorage.getItem("access_token");
+  console.log("token: ", token);
   if (!token) {
     return { success: false, message: "Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục." };
   }

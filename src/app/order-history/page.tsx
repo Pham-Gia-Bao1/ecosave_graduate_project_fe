@@ -94,7 +94,7 @@ export default function OrderHistory() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <h1 className="text-2xl font-bold mb-8 text-center">LỊCH SỬ ĐƠN HÀNG</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center">Lịch sử đơn hàng</h1>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
         </div>
@@ -105,7 +105,7 @@ export default function OrderHistory() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <h1 className="text-2xl font-bold mb-8 text-center">LỊCH SỬ ĐƠN HÀNG</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center">Lịch sử đơn hàng</h1>
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Không thể tải lịch sử đơn hàng, vui lòng quay lại sau! </strong>
           {/* <span className="block sm:inline">{error}</span> */}
@@ -117,7 +117,7 @@ export default function OrderHistory() {
   if (orders.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <h1 className="text-2xl font-bold mb-8 text-center">LỊCH SỬ ĐƠN HÀNG</h1>
+        <h1 className="text-2xl font-bold mb-8 text-center">Lịch sử đơn hàng</h1>
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-500">Bạn chưa có đơn hàng nào</p>
         </div>
@@ -127,7 +127,7 @@ export default function OrderHistory() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <h1 className="text-2xl font-bold mb-8 text-center">LỊCH SỬ ĐƠN HÀNG</h1>
+      <h1 className="text-2xl font-bold mb-8 text-center">Lịch sử đơn hàng</h1>
 
       <div className="space-y-8">
         {orders.map((order) => (

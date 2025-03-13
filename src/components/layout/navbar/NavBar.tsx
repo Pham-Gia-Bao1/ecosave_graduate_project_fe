@@ -1,12 +1,15 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Badge, Drawer } from "@mui/material";
 import {
   Favorite,
   Notifications,
   ShoppingCart,
   Close,
+  ExitToApp as LogOut
 } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import { ClipboardList, Package, Heart} from "lucide-react";
 import Link from "next/link";
 import menuItemsData from "../../../assets/json/menuItems.json";
 import { UserProfile } from "@/types";
@@ -21,13 +24,16 @@ import useCart from "@/hooks/useCart";
 import RemainderComponent from "@/components/remainder/RemainderComponent";
 import { getCurrentDate } from "@/utils/helpers/getCurrentDate";
 import { reset } from "@/redux/notificationSlice";
+import { logout } from "@/api";
 export interface NavbarProps {
   user: UserProfile | null;
 }
+
 const Navbar: React.FC<NavbarProps> = ({ user }) => {
   useNotifications(); // Kích hoạt lấy thông báo ngay khi Navbar render
   useCart();
   const dispatch = useDispatch();
+  const router = useRouter();
   const notificationCount = useSelector(
     (state: RootState) => state.notifications.count
   );
@@ -40,15 +46,49 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
   );
   const [active, setActive] = useState<number>(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
   const menuRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const totalItems = useSelector((state: RootState) => state.cart.totalItems);
+  const [logoutLoading, setLogoutLoading] = useState(false); // 🆕 State để xử lý loading khi logout
+
   const [typeOfNotification, setTypeOfNotification] = useState<
     "new" | "reminder"
   >("new");
+  
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
     dispatch(reset());
   };
+
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+      setLogoutLoading(true); 
+      await logout(dispatch);
+      setLogoutLoading(false); 
+      router.push("/login");
+    };
+
   const icons: { [key: string]: JSX.Element } = {
     Notification: (
       <Badge
@@ -73,6 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
       </Link>
     ),
   };
+
   return (
     <nav
       className={`hidden lg:flex items-center justify-between w-full px-6 py-2 shadow-md`}
@@ -120,8 +161,15 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
             </div>
           ))}
         {user ? (
-          <Link href="/profile">
-            <div className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300">
+          <div 
+            className="relative" 
+            ref={profileDropdownRef}
+          >
+            <div 
+              className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300"
+              onClick={toggleProfileDropdown}
+              onMouseEnter={() => setIsProfileDropdownOpen(true)}
+            >
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <Image
                   src={user?.avatar || defaultAvatar}
@@ -138,7 +186,66 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
                 </p>
               </div>
             </div>
-          </Link>
+            
+            {/* Profile Dropdown Modal */}
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg z-50 overflow-hidden">
+                {/* Profile Header */}
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 rounded-full overflow-hidden">
+                      <Image
+                        src={user?.avatar || defaultAvatar}
+                        width={48}
+                        height={48}
+                        alt="avatar user"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{user?.username || "Guest"}</p>
+                      <Link href="/profile" onClick={() => setIsProfileDropdownOpen(false)}>
+                        <button className="text-sm text-blue-600 hover:underline">
+                          Xem tất cả trang cá nhân
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Menu Options */}
+                <div className="py-2">
+                  <Link href="/order-history" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <ClipboardList className="text-gray-600" fontSize="small" />
+                    <span className="text-gray-800">Xem lịch sử đơn hàng</span>
+                  </Link>
+                  
+                  <Link href="/expiry-items-reminder" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <Package className="text-gray-600" fontSize="small" />
+                    <span className="text-gray-800">Quản lý kho sản phẩm nhắc nhở</span>
+                  </Link>
+                  
+                  <Link href="/favorite-products" onClick={() => setIsProfileDropdownOpen(false)}>
+                    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                      <Heart className="text-gray-600" fontSize="small" />
+                      <span className="text-gray-800">Xem các sản phẩm yêu thích</span>
+                    </div>
+                  </Link>
+                  
+                  <button 
+                    onClick={() => {
+                      setIsProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors w-full text-left border-t border-gray-100"
+                  >
+                    <LogOut className="text-gray-600" fontSize="small" />
+                    <span className="text-gray-800">Đăng xuất</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex space-x-4">
             <Link href="/login">
@@ -207,4 +314,5 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
     </nav>
   );
 };
+
 export default Navbar;
