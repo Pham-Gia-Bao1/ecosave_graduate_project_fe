@@ -771,6 +771,85 @@ export const deleteSaveProductById = async (code: string): Promise<boolean> => {
     return false;
   }
 };
+// Lấy danh sách wishlist
+export const getWishlist = async () => {
+  const token = localStorage.getItem("access_token");
+  console.log("Token:", token);
+
+  try {
+    const response = await axios.get(`${serverUrl}/wishlist`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy wishlist:", error);
+    return null;
+  }
+};
+
+// Thêm sản phẩm vào wishlist
+export const addToWishlist = async (productId: number) => {
+  const token = localStorage.getItem("access_token");
+
+  try {
+    const response = await axios.post(
+      `${serverUrl}/wishlist`,
+      { product_id: productId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi thêm vào wishlist:", error);
+    return null;
+  }
+};
+
+// Xóa sản phẩm khỏi wishlist
+export const removeFromWishlist = async (id: number) => {
+  const token = localStorage.getItem("access_token");
+
+  try {
+    const response = await axios.delete(`${serverUrl}/wishlist/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi xóa khỏi wishlist:", error);
+    return null;
+  }
+};
+
+// Lấy danh sách ID sản phẩm trong wishlist
+export const getWishlistProductIds = async () => {
+  const token = localStorage.getItem("access_token");
+  console.log("Token:", token);
+
+  try {
+    const response = await axios.get(`${serverUrl}/wishlist/product-ids`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Product IDs:", response.data);
+    return response.data; // Trả về mảng product_id
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách product_id từ wishlist:", error);
+    return [];
+  }
+};
 
 
 export { getProductByStoreId, getStoreById, getNearingStores, getCSRF, logIn, fetchUserInfo, register, getLatLng, getLocationSuggestions, getProducts, getCategories, getProductsByCategoryId };

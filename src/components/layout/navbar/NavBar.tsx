@@ -27,6 +27,8 @@ export interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ user }) => {
   useNotifications(); // Kích hoạt lấy thông báo ngay khi Navbar render
   useCart();
+  const wishlist = useSelector((state: RootState) => state.wishlist.items);
+
   const dispatch = useDispatch();
   const notificationCount = useSelector(
     (state: RootState) => state.notifications.count
@@ -61,9 +63,11 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
       </Badge>
     ),
     Wishlist: (
-      <Badge badgeContent={2} color="error">
-        <Favorite />
-      </Badge>
+      <Link href="/wishlist">
+        <Badge badgeContent={wishlist.length} color="error">
+          <Favorite />
+        </Badge>
+      </Link>
     ),
     Cart: (
       <Link href="/cart">
