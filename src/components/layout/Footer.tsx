@@ -18,7 +18,6 @@ const Footer: React.FC = () => {
                 <h2 className="text-lg font-semibold text-green-600">
                   EcoSave
                 </h2>
-                <p className="text-sm text-gray-500">Grocery</p>
               </div>
             </div>
             <ul className="space-y-2 text-sm text-gray-600">
@@ -27,15 +26,15 @@ const Footer: React.FC = () => {
                 Trác - Đà Nẵng
               </li>
               <li>
-                <span className="font-semibold">📞 Gọi:</span> 1233-777
+                <span className="font-semibold">📞 Gọi:</span> 0393-838-382
               </li>
               <li>
                 <span className="font-semibold">✉ Email:</span>{" "}
-                groceyish@contact.com
+                ecosave@contact.com
               </li>
               <li>
                 <span className="font-semibold">⏰ Giờ làm việc:</span> 8:00 -
-                20:00, Sunday - Thursday
+                20:00, Thứ hai - Chủ nhật
               </li>
             </ul>
           </div>
@@ -49,7 +48,7 @@ const Footer: React.FC = () => {
                 <Link href="/cart">Giỏ hàng</Link>
               </li>
               <li>
-                <Link href="/orders">Thông tin đơn hàng</Link>
+                <Link href="/order-history">Thông tin đơn hàng</Link>
               </li>
               <li>
                 <Link href="/delivery">Chi tiết giao hàng</Link>
@@ -66,13 +65,13 @@ const Footer: React.FC = () => {
                 <Link href="/contact">Liên hệ</Link>
               </li>
               <li>
-                <Link href="/hot-deals">Giá hot</Link>
+                <Link href="/products">Giá hot</Link>
               </li>
               <li>
-                <Link href="/promotions">Khuyến mãi</Link>
+                <Link href="/products">Khuyến mãi</Link>
               </li>
               <li>
-                <Link href="/new-products">Sản phẩm mới</Link>
+                <Link href="/products">Sản phẩm mới</Link>
               </li>
             </ul>
           </div>

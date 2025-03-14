@@ -237,9 +237,14 @@ export default function Products({
           </h3>
         </Link>
         <div className="flex justify-between items-center">
-          <p className="text-primary-light font-bold">
-            {formatMoney(Number(product.original_price), "VND")}
-          </p>
+          <div className="flex">
+            <p className="text-primary-light font-bold mr-2">
+              {formatMoney(Number(product.discounted_price), "VND")}
+            </p>
+            <p className="text-gray-500 font-bold line-through">
+              {formatMoney(Number(product.original_price), "VND")}
+            </p>
+          </div>
           <div className="flex items-center gap-1">
             {product.rating}{" "}
             <AiFillStar className="text-yellow-400" size={16} />
