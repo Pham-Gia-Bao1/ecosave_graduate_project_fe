@@ -9,7 +9,7 @@ import {
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { FaSearch } from "react-icons/fa";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { increment, setTotalItems } from "@/redux/cartSlice";
 import { useParams } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -22,6 +22,8 @@ import calculateDistance from "@/utils/calculateDistance";
 import { formatMoney } from "@/utils";
 import SubLoading from "../loading/subLoading";
 import { motion } from "framer-motion";
+import { useWishlist } from "@/hooks/useWishlist";
+import { RootState } from "@/redux/store";
 // Constants
 const ITEMS_PER_PAGE = 8;
 const DEBOUNCE_DELAY = 500;
@@ -34,7 +36,12 @@ export default function Products({
   products: initialProducts,
   loading: initialLoading,
 }: ProductsProps) {
+  const { handleAddToWishlist, handleRemove } = useWishlist();
+  const wishlist = useSelector((state: RootState) => state.wishlist.items);
+  const favoriteProductIds = wishlist.map((item) => item.product_id);
+
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user.user);
   const userLocation = useUserLocation();
   const params = useParams();
   const storeId =
@@ -96,14 +103,44 @@ export default function Products({
     },
     [debounceTimeout, storeId]
   );
-  // Toggle favorite product
-  const toggleFavorite = useCallback((productId: number) => {
+
+  const toggleFavorite = (product: Product) => {
     setFavoriteProducts((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+      prev.includes(product.id)
+        ? prev.filter((id) => id !== product.id)
+        : [...prev, product.id]
     );
-  }, []);
+
+    const isInWishlist = wishlist.some(
+      (item) => item.product_id === product.id
+    );
+    console.log(isInWishlist);
+    if (!isInWishlist && user) {
+      try {
+        handleAddToWishlist({
+          id: product.id,
+          user_id: user.id,
+          product_id: product.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          product: product,
+        });
+        setToast({ message: "Đã thêm vào wishlist", keyword: "SUCCESS" });
+      } catch (error) {
+        console.error("Lỗi khi thêm vào wishlist:", error);
+        setToast({ message: "Lỗi khi thêm vào wishlist!", keyword: "ERROR" });
+      }
+    } else {
+      try {
+        handleRemove(product.id);
+        setToast({ message: "Đã xóa khỏi wishlist", keyword: "SUCCESS" });
+      } catch (error) {
+        console.error("Lỗi khi xóa khỏi wishlist:", error);
+        setToast({ message: "Lỗi khi xóa khỏi wishlist!", keyword: "ERROR" });
+      }
+    }
+  };
+
   // Add to cart handler
   const handleAddToCart = useCallback(
     async (product: Product) => {
@@ -215,20 +252,26 @@ export default function Products({
         </div>
       </div>
       <div className="flex justify-between mt-4 px-4">
-        <button
+        <motion.button
           className={`p-2 border rounded-full transition-all duration-300 ${
-            favoriteProducts.includes(product.id)
+            favoriteProductIds.includes(product.id)
               ? "bg-orange-500 text-white"
               : "bg-white text-red-500 hover:bg-red-500 hover:text-white"
           }`}
-          onClick={() => toggleFavorite(product.id)}
+          whileTap={{ scale: 0.8 }}
+          animate={{
+            scale: favoriteProductIds.includes(product.id) ? [1, 1.2, 1] : 1,
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          onClick={() => toggleFavorite(product)}
         >
-          {favoriteProducts.includes(product.id) ? (
+          {favoriteProductIds.includes(product.id) ? (
             <AiFillHeart size={20} />
           ) : (
             <AiOutlineHeart size={20} />
           )}
-        </button>
+        </motion.button>
+
         <button
           onClick={() => handleAddToCart(product)}
           className="p-2 w-[75%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
