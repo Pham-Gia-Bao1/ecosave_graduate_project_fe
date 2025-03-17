@@ -1,16 +1,41 @@
 import { getSaveProductOfUser } from "@/api";
 import { getProductsByIds } from "@/api/scan";
 import { ProductScan, UserProfile } from "@/types";
-import { formatDateTime } from "@/utils";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Trash } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { addNotifications } from "@/redux/notificationSlice";
+import { motion } from "framer-motion"; // Import framer-motion
 
 type RemainderType = {
   currentDate: string;
   user: UserProfile | null;
+};
+
+// Hàm định dạng chỉ ngày (không giờ)
+const formatDateOnly = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+// Variants cho animation từ phải sang trái
+const itemVariants = {
+  hidden: { x: 100, opacity: 0 }, // Bắt đầu từ bên phải (x: 100) và ẩn
+  visible: (i: number) => ({
+    x: 0, // Di chuyển về vị trí ban đầu
+    opacity: 1,
+    transition: {
+      delay: i * 0.1, // Delay tăng dần cho từng item
+      type: "spring",
+      stiffness: 100,
+      damping: 20,
+    },
+  }),
 };
 
 export default function RemainderComponent({
@@ -20,6 +45,7 @@ export default function RemainderComponent({
   const [products, setProducts] = useState<ProductScan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const dispatch = useDispatch();
+
   useEffect(() => {
     if (user?.id) {
       setLoading(true);
@@ -46,7 +72,7 @@ export default function RemainderComponent({
 
     if (storedData) {
       try {
-        const productIds = JSON.parse(storedData) as string[]; // Directly parse as an array
+        const productIds = JSON.parse(storedData) as string[];
 
         if (!Array.isArray(productIds)) {
           console.error("Invalid session storage format:", productIds);
@@ -89,12 +115,16 @@ export default function RemainderComponent({
         <p className="text-center text-gray-500">Không có sản phẩm nào.</p>
       ) : (
         <div className="flex flex-col">
-          {products.map((product) => {
+          {products.map((product, index) => {
             const daysRemaining = getDaysRemaining(product.expiryDate);
 
             return (
-              <div
+              <motion.div
                 key={product._id}
+                custom={index} // Truyền index để tạo delay tăng dần
+                initial="hidden"
+                animate="visible"
+                variants={itemVariants}
                 className="flex flex-col p-4 mt-2 bg-white border rounded"
               >
                 <div className="flex items-center justify-between">
@@ -127,13 +157,13 @@ export default function RemainderComponent({
                   </button>
                 </div>
                 <p className="text-gray-700 text-sm mt-2">
-                  👉 Hãy sử dụng trước{" "}
+                  👉 Hãy sử dụng trước
                   <span className="font-semibold">
-                    {formatDateTime(product.expiryDate)}
-                  </span>{" "}
+                    {formatDateOnly(product.expiryDate)}
+                  </span>
                   để đảm bảo chất lượng tốt nhất.
                 </p>
-              </div>
+              </motion.div>
             );
           })}
         </div>

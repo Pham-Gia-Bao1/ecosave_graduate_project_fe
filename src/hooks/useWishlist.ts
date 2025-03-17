@@ -90,10 +90,9 @@ export const useWishlist = () => {
     }, [dispatch]);
 
     const handleAddAllToCart = async () => {
-        for (const item of wishlist) {
-            await handleAddToCart(item.product);
-        }
+        await Promise.all(wishlist.map(item => handleAddToCart(item.product)));
     };
+
 
     return {
         wishlist,

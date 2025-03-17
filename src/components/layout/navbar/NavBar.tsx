@@ -1,18 +1,26 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Badge, Drawer } from "@mui/material";
+import {
+  Badge,
+  Button,
+  CircularProgress,
+  Drawer,
+  IconButton,
+} from "@mui/material";
 import {
   Favorite,
   Notifications,
   ShoppingCart,
   Close,
-  ExitToApp as LogOut
+  ExitToApp as LogOut,
+  AddShoppingCart,
+  FavoriteBorder,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Package, Heart} from "lucide-react";
+import { ClipboardList, Package, Heart, Delete } from "lucide-react";
 import Link from "next/link";
 import menuItemsData from "../../../assets/json/menuItems.json";
-import { UserProfile } from "@/types";
+import { Product, UserProfile, WishList } from "@/types";
 import Image from "next/image";
 import defaultAvatar from "../../../assets/images/users/userAvata1.png";
 import LOGO from "../../../assets/images/logo/LOGO.png";
@@ -25,6 +33,9 @@ import RemainderComponent from "@/components/remainder/RemainderComponent";
 import { getCurrentDate } from "@/utils/helpers/getCurrentDate";
 import { reset } from "@/redux/notificationSlice";
 import { logout } from "@/api";
+import { AnimatePresence, motion } from "framer-motion";
+import { useWishlist } from "@/hooks/useWishlist";
+import { formatMoney } from "@/utils";
 export interface NavbarProps {
   user: UserProfile | null;
   isLogin: boolean;
@@ -34,7 +45,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   useNotifications(); // Kích hoạt lấy thông báo ngay khi Navbar render
   useCart();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
-
+  const { handleRemove, handleAddToCart, handleAddAllToCart } = useWishlist();
   const dispatch = useDispatch();
   const router = useRouter();
   const notificationCount = useSelector(
@@ -49,19 +60,45 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   );
   const [active, setActive] = useState<number>(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState<boolean>(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] =
+    useState<boolean>(false);
   const menuRefs = useRef<(HTMLLIElement | null)[]>([]);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const totalItems = useSelector((state: RootState) => state.cart.totalItems);
   const [logoutLoading, setLogoutLoading] = useState(false); // 🆕 State để xử lý loading khi logout
-
+  const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>(
+    {}
+  );
   const [typeOfNotification, setTypeOfNotification] = useState<
     "new" | "reminder"
   >("new");
-
+  // Hàm xử lý thêm vào giỏ hàng với loading
+  const handleAddToCartWithLoading = async (
+    product: Product,
+    wishlistId: number
+  ) => {
+    setLoadingItems((prev) => ({ ...prev, [wishlistId]: true }));
+    try {
+      await handleAddToCart(product);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    } finally {
+      setLoadingItems((prev) => ({ ...prev, [wishlistId]: false }));
+    }
+  };
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
     dispatch(reset());
+  };
+  const slideInFromRight = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.4 } },
+  };
+
+  // Thêm function để toggle Wishlist Drawer
+  const toggleWishlist = () => {
+    setIsWishlistOpen(!isWishlistOpen);
   };
 
   const toggleProfileDropdown = () => {
@@ -86,12 +123,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   }, []);
 
   const handleLogout = async () => {
-      setLogoutLoading(true);
-      await logout(dispatch);
-      setLogoutLoading(false);
-      router.push("/login");
-    };
+    setLogoutLoading(true);
+    await logout(dispatch);
+    setLogoutLoading(false);
+    router.push("/login");
+  };
 
+  // Sửa phần Wishlist trong icons object
   const icons: { [key: string]: JSX.Element } = {
     Notification: (
       <Badge
@@ -104,11 +142,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
       </Badge>
     ),
     Wishlist: (
-      <Link href="/wishlist">
+      <div onClick={toggleWishlist} className="cursor-pointer">
         <Badge badgeContent={wishlist.length} color="error">
           <Favorite />
         </Badge>
-      </Link>
+      </div>
     ),
     Cart: (
       <Link href="/cart">
@@ -166,14 +204,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
             </div>
           ))}
         {user ? (
-          <div
-            className="relative"
-            ref={profileDropdownRef}
-          >
+          <div className="relative" ref={profileDropdownRef}>
             <div
               className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300"
               onClick={toggleProfileDropdown}
-              onMouseEnter={() => setIsProfileDropdownOpen(true)}
             >
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <Image
@@ -193,63 +227,96 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
             </div>
 
             {/* Profile Dropdown Modal */}
-            {isProfileDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg z-50 overflow-hidden">
-                {/* Profile Header */}
-                <div className="p-4 border-b border-gray-100">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden">
-                      <Image
-                        src={user?.avatar || defaultAvatar}
-                        width={48}
-                        height={48}
-                        alt="avatar user"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{user?.username || "Guest"}</p>
-                      <Link href="/profile" onClick={() => setIsProfileDropdownOpen(false)}>
-                        <button className="text-sm text-blue-600 hover:underline">
-                          Xem tất cả trang cá nhân
-                        </button>
-                      </Link>
+            <AnimatePresence>
+              {isProfileDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }} // Trạng thái ban đầu: mờ và hơi dịch lên trên
+                  animate={{ opacity: 1, y: 0 }} // Trạng thái khi xuất hiện: rõ và trở về vị trí ban đầu
+                  exit={{ opacity: 0, y: -10 }} // Trạng thái khi biến mất: mờ và dịch lên trên
+                  transition={{ duration: 0.2 }} // Thời gian chuyển động: 0.2 giây
+                  className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg z-50 overflow-hidden"
+                >
+                  {/* Profile Header */}
+                  <div className="p-4 border-b border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 rounded-full overflow-hidden">
+                        <Image
+                          src={user?.avatar || defaultAvatar}
+                          width={48}
+                          height={48}
+                          alt="avatar user"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {user?.username || "Guest"}
+                        </p>
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                        >
+                          <button className="text-sm text-blue-600 hover:underline">
+                            Xem tất cả trang cá nhân
+                          </button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Menu Options */}
-                <div className="py-2">
-                  <Link href="/order-history" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <ClipboardList className="text-gray-600" fontSize="small" />
-                    <span className="text-gray-800">Xem lịch sử đơn hàng</span>
-                  </Link>
+                  {/* Menu Options */}
+                  <div className="py-2">
+                    <Link
+                      href="/order-history"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <ClipboardList
+                        className="text-gray-600"
+                        fontSize="small"
+                      />
+                      <span className="text-gray-800">
+                        Xem lịch sử đơn hàng
+                      </span>
+                    </Link>
 
-                  <Link href="/expiry-items-reminder" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <Package className="text-gray-600" fontSize="small" />
-                    <span className="text-gray-800">Quản lý kho sản phẩm nhắc nhở</span>
-                  </Link>
+                    <Link
+                      href="/expiry-items-reminder"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <Package className="text-gray-600" fontSize="small" />
+                      <span className="text-gray-800">
+                        Quản lý kho sản phẩm nhắc nhở
+                      </span>
+                    </Link>
 
-                  <Link href="/favorite-products" onClick={() => setIsProfileDropdownOpen(false)}>
-                    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                      <Heart className="text-gray-600" fontSize="small" />
-                      <span className="text-gray-800">Xem các sản phẩm yêu thích</span>
-                    </div>
-                  </Link>
+                    <Link
+                      href="/wishlist"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                        <Heart className="text-gray-600" fontSize="small" />
+                        <span className="text-gray-800">
+                          Xem các sản phẩm yêu thích
+                        </span>
+                      </div>
+                    </Link>
 
-                  <button
-                    onClick={() => {
-                      setIsProfileDropdownOpen(false);
-                      handleLogout();
-                    }}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors w-full text-left border-t border-gray-100"
-                  >
-                    <LogOut className="text-gray-600" fontSize="small" />
-                    <span className="text-gray-800">Đăng xuất</span>
-                  </button>
-                </div>
-              </div>
-            )}
+                    <button
+                      onClick={() => {
+                        setIsProfileDropdownOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors w-full text-left border-t border-gray-100"
+                    >
+                      <LogOut className="text-gray-600" fontSize="small" />
+                      <span className="text-gray-800">Đăng xuất</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
           <div className="flex space-x-4">
@@ -315,6 +382,137 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
             <RemainderComponent currentDate={currentDate} user={user} />
           )}
         </div>
+      </Drawer>
+      {/* Wishlist Drawer */}
+      <Drawer anchor="right" open={isWishlistOpen} onClose={toggleWishlist}>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={slideInFromRight}
+          className="w-[300px] md:w-[400px] min-h-full h-auto bg-white p-6"
+        >
+          {/* Header */}
+          <motion.div
+            variants={slideInFromRight}
+            className="flex justify-between items-center mb-6"
+          >
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Danh sách yêu thích
+              </h2>
+              <p className="text-gray-600">{wishlist.length} sản phẩm</p>
+            </div>
+            <IconButton onClick={toggleWishlist}>
+              <Close />
+            </IconButton>
+          </motion.div>
+
+          {/* Wishlist Items */}
+          <div className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto overflow-x-hidden">
+            {wishlist.length > 0 ? (
+              wishlist.map((item: WishList, index) => (
+                <motion.div
+                  key={item.id}
+                  variants={slideInFromRight}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-center gap-4 p-3 border rounded-lg hover:bg-gray-50"
+                >
+                  {/* Product Image */}
+                  <div className="w-16 h-16 relative flex-shrink-0">
+                    <Image
+                      src={
+                        item.product.images[0]?.image_url ||
+                        "/placeholder-image.jpg"
+                      }
+                      alt={item.product.name}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded"
+                    />
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800 truncate-description-2-line">
+                      {item.product.name}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {formatMoney(
+                        Number.parseInt(
+                          item.product.discounted_price.toLocaleString()
+                        ),
+                        "VND"
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <IconButton
+                      onClick={() =>
+                        handleAddToCartWithLoading(item.product, item.id)
+                      }
+                      size="small"
+                      title="Thêm vào giỏ hàng"
+                      disabled={loadingItems[item.id]}
+                    >
+                      {loadingItems[item.id] ? (
+                        <CircularProgress size={20} className="text-primary" />
+                      ) : (
+                        <AddShoppingCart className="text-primary" />
+                      )}
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleRemove(item.id)}
+                      size="small"
+                      title="Xóa khỏi wishlist"
+                    >
+                      <Delete className="text-gray-200 hover:text-red-500" />
+                    </IconButton>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <motion.p
+                variants={slideInFromRight}
+                className="text-center text-gray-500 py-8"
+              >
+                Danh sách yêu thích đang trống
+              </motion.p>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          {wishlist.length > 0 && (
+            <motion.div
+              variants={slideInFromRight}
+              className="mt-6 pt-4 border-t flex flex-col gap-2"
+            >
+              <Link href="/wishlist">
+                <Button
+                  onClick={toggleWishlist}
+                  variant="outlined"
+                  startIcon={<FavoriteBorder />}
+                  fullWidth
+                  className="border-primary text-primary hover:bg-primary-light/20 p-4"
+                >
+                  Xem trang danh sách yêu thích
+                </Button>
+              </Link>
+              <Button
+                variant="contained"
+                startIcon={<AddShoppingCart />}
+                fullWidth
+                onClick={handleAddAllToCart}
+                className="bg-primary hover:bg-primary-light p-4 text-white font-semibold"
+              >
+                Thêm tất cả vào giỏ hàng
+              </Button>
+            </motion.div>
+          )}
+        </motion.div>
       </Drawer>
     </nav>
   );

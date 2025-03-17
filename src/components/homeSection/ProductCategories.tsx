@@ -1,34 +1,47 @@
 import { getProducts, getProductsByCategoryId } from "@/api";
 import { Category, Product } from "@/types";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import ClassNames from "classnames";
+import { motion } from "framer-motion";
+import {
+  ShoppingCart,
+  Utensils,
+  Fish,
+  Egg,
+  Apple,
+  Snowflake,
+  Wrench,
+  Droplets,
+  Wheat,
+  Package,
+  Milk,
+  Box,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
-import { ShoppingCart, Utensils,Fish, Egg, Apple, Snowflake, Wrench, Droplets, Wheat, Package, Milk, Box } from "lucide-react";
 interface ProductCategoriesProps {
   categories: Category[];
   setProducts: (products: Product[]) => void;
   setLoading: (loading: boolean) => void;
 }
 
-
 const getCategoryIcon = (categoryName: string) => {
   const icons: Record<string, JSX.Element> = {
-    "Tất cả": <ShoppingCart className="w-6 h-6 text-gray-600" />,
-    "Thịt": <Utensils className="w-6 h-6 text-gray-600" />,
-    "Thủy sản": <Fish className="w-6 h-6 text-gray-600" />,
-    "Trứng": <Egg className="w-6 h-6 text-gray-600" />,
-    "Trái Cây": <Apple className="w-6 h-6 text-gray-600" />,
-    "Thực Phẩm Đông Lạnh": <Snowflake className="w-6 h-6 text-gray-600" />,
-    "Thực Phẩm Sơ Chế": <Wrench className="w-6 h-6 text-gray-600" />,
-    "Dầu Ăn, Gia vị": <Droplets className="w-6 h-6 text-gray-600" />,
-    "Gạo, Mì, Bún, Đậu": <Wheat className="w-6 h-6 text-gray-600" />,
-    "Thực Phẩm khô": <Package className="w-6 h-6 text-gray-600" />,
-    "Chế Phẩm Từ Sữa": <Milk className="w-6 h-6 text-gray-600" />,
+    "Tất cả": <ShoppingCart className="w-6 h-6" />,
+    Thịt: <Utensils className="w-6 h-6" />,
+    "Thủy sản": <Fish className="w-6 h-6" />,
+    Trứng: <Egg className="w-6 h-6" />,
+    "Trái Cây": <Apple className="w-6 h-6" />,
+    "Thực Phẩm Đông Lạnh": <Snowflake className="w-6 h-6" />,
+    "Thực Phẩm Sơ Chế": <Wrench className="w-6 h-6" />,
+    "Dầu Ăn, Gia vị": <Droplets className="w-6 h-6" />,
+    "Gạo, Mì, Bún, Đậu": <Wheat className="w-6 h-6" />,
+    "Thực Phẩm khô": <Package className="w-6 h-6" />,
+    "Chế Phẩm Từ Sữa": <Milk className="w-6 h-6" />,
   };
-
-  return icons[categoryName] || <Box className="w-6 h-6 text-gray-600" />;
+  return icons[categoryName] || <Box className="w-6 h-6" />;
 };
-
 
 const ProductCategories: React.FC<ProductCategoriesProps> = ({
   categories,
@@ -36,10 +49,12 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
   setLoading,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [visibleItems, setVisibleItems] = useState(0); // State for visible items
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchProducts = useCallback(
     async (categoryId: number | null) => {
-      console.log(categories)
       setLoading(true);
       setSelectedCategory(categoryId);
       try {
@@ -60,6 +75,45 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
     fetchProducts(null);
   }, [fetchProducts]);
 
+  // Calculate visible items on mount and resize
+  useEffect(() => {
+    const updateVisibleItems = () => {
+      if (typeof window !== "undefined") {
+        const itemWidth = 150;
+        const newVisibleItems = Math.floor((window.innerWidth - 100) / itemWidth);
+        setVisibleItems(newVisibleItems);
+      }
+    };
+
+    updateVisibleItems(); // Initial calculation
+    window.addEventListener("resize", updateVisibleItems); // Update on resize
+
+    return () => window.removeEventListener("resize", updateVisibleItems); // Cleanup
+  }, []);
+
+  const buttonVariants = {
+    initial: { scale: 1, y: 0 },
+    hover: { scale: 1.05, y: -2, transition: { duration: 0.2 } },
+    tap: { scale: 0.95, transition: { duration: 0.1 } },
+  };
+
+  const itemWidth = 150;
+  const totalItems = categories.length + 1;
+  const maxScroll = (totalItems - visibleItems) * itemWidth;
+
+  const handleScrollLeft = () => {
+    const newPosition = Math.max(scrollPosition - itemWidth * visibleItems, 0);
+    setScrollPosition(newPosition);
+  };
+
+  const handleScrollRight = () => {
+    const newPosition = Math.min(
+      scrollPosition + itemWidth * visibleItems,
+      maxScroll
+    );
+    setScrollPosition(newPosition);
+  };
+
   return (
     <div className="w-full px-4 py-3">
       <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
@@ -69,22 +123,63 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
         </span>
       </div>
 
-      <div className="mt-2 overflow-x-auto max-h-80">
-        <div className="flex gap-3 overflow-x-auto scrollbar-container py-3">
-          {[{ id: null, name: "Tất cả" }, ...categories].map(({ id, name }) => (
-            <div
-              key={id ?? "all"}
-              className={ClassNames(
-                "flex-shrink-0 flex justify-center gap-2 items-center p-4 rounded-lg cursor-pointer transition",
-                selectedCategory === id ? "bg-primary text-white shadow-lg" : "bg-gray-100 hover:shadow-lg"
-              )}
-              onClick={() => fetchProducts(id)}
-            >
-              {getCategoryIcon(name)}
-              <p className="text-gray-700 font-medium text-sm text-center">{name}</p>
-            </div>
-          ))}
+      <div className="mt-2 flex items-center w-full">
+        <button
+          onClick={handleScrollLeft}
+          disabled={scrollPosition === 0}
+          className={ClassNames(
+            "p-2 rounded-full",
+            scrollPosition === 0
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-200"
+          )}
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        <div className="overflow-hidden flex-1 w-full py-3">
+          <motion.div
+            ref={containerRef}
+            className="flex gap-3 whitespace-nowrap"
+            animate={{ x: -scrollPosition }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            style={{ minWidth: "max-content" }}
+          >
+            {[{ id: null, name: "Tất cả" }, ...categories].map(({ id, name }) => (
+              <motion.div
+                key={id ?? "all"}
+                className={ClassNames(
+                  "flex justify-center gap-2 items-center p-4 rounded-lg cursor-pointer transition-colors",
+                  selectedCategory === id
+                    ? "bg-primary text-white shadow-lg"
+                    : "bg-gray-100 text-gray-600 hover:shadow-lg"
+                )}
+                style={{ width: `${itemWidth}px` }}
+                onClick={() => fetchProducts(id)}
+                variants={buttonVariants}
+                initial="initial"
+                whileHover="hover"
+                whileTap="tap"
+              >
+                {getCategoryIcon(name)}
+                <p className="font-medium text-sm text-center">{name}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
+
+        <button
+          onClick={handleScrollRight}
+          disabled={scrollPosition >= maxScroll}
+          className={ClassNames(
+            "p-2 rounded-full",
+            scrollPosition >= maxScroll
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-200"
+          )}
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
       </div>
     </div>
   );

@@ -742,11 +742,21 @@ export const fetchUser = async () => {
   }
 };
 
-
 export const getUserOrders = async () => {
+  const cachedData = sessionStorage.getItem("user_orders");
+  const cachedTimestamp = sessionStorage.getItem("user_orders_timestamp");
+
+  const now = Date.now();
+  const cacheExpiry = 60 * 1000; // 1 phút (60 giây * 1000ms)
+
+  // Kiểm tra nếu có cache và chưa hết hạn
+  if (cachedData && cachedTimestamp && now - Number(cachedTimestamp) < cacheExpiry) {
+    return JSON.parse(cachedData);
+  }
+
   const token = localStorage.getItem("access_token");
   try {
-    const response = await fetch( `${serverUrl}/order-history`, {
+    const response = await fetch(`${serverUrl}/order-history`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -758,12 +768,19 @@ export const getUserOrders = async () => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    // Lưu dữ liệu vào sessionStorage + cập nhật timestamp
+    sessionStorage.setItem("user_orders", JSON.stringify(data));
+    sessionStorage.setItem("user_orders_timestamp", now.toString());
+
+    return data;
   } catch (error) {
     console.error("Lỗi khi gọi API:", error);
     return null;
   }
 };
+
 
 export const deleteSaveProductById = async (code: string): Promise<boolean> => {
   const token = localStorage.getItem("access_token"); // Lấy token từ localStorage

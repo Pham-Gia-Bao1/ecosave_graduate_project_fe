@@ -1,5 +1,5 @@
 import { ProductScan, ScanProductInfoProps } from "@/types";
-import { formatCurrency, formatDateTime } from "@/utils";
+import { formatCurrency, formatDateTime, formatMoney } from "@/utils";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -77,11 +77,9 @@ export default function ScanProduct({
       <p className="text-gray-700">{product.description}</p>
       <div className="mt-4 flex justify-between items-center">
         <h4 className="text-xl font-semibold text-red-600">
-          {formatCurrency(product.price)}
+          {formatMoney(product.price, 'VND')}
         </h4>
-        <span className="text-sm text-gray-500">
-          {product.availabilityStatus}
-        </span>
+
       </div>
       {/* Chi tiết sản phẩm */}
       <h4 className="mt-6 text-lg font-semibold text-gray-800">
