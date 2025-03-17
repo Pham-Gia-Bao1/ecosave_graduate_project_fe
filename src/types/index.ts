@@ -178,6 +178,9 @@ export interface OrderData {
   status: string;
   order_date: Date;
   items: OrderItem[];
+  store_latitude ?: string;
+  store_longitude ?: string;
+
 }
 export interface ApiResponse<T = any> {
   success: boolean;

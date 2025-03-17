@@ -15,7 +15,7 @@ const ToastNotification: React.FC<ToastNotificationProps> = ({ message, keyword 
   };
   return (
     <Snackbar
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       open={open}
       autoHideDuration={3000}
       onClose={handleClose}

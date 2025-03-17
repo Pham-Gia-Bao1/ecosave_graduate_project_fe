@@ -44,6 +44,9 @@ const config: Config = {
       },
       animation: {
         "spin-ease": "spin-ease 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite",
+        'fade-in': 'fadeIn 0.5s ease-in',
+        'fade-in-down': 'fadeInDown 0.5s ease-in',
+        'fade-in-up': 'fadeInUp 0.5s ease-in',
       },
       keyframes: {
         "spin-ease": {
@@ -51,7 +54,22 @@ const config: Config = {
           "50%": { transform: "rotate(180deg)" },
           "100%": { transform: "rotate(360deg)" },
         },
+
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeInDown: {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
+
+
     },
   },
   plugins: [tailwindcssAnimate, tailwindcssDebugScreens], // Fixed missing plugin
