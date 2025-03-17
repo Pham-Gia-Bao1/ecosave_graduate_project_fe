@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Navbar from "./navbar/NavBar";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Link from "next/link";
 import menuItemsData from "../../assets/json/menuItems.json";
@@ -18,7 +17,9 @@ import useCart from "@/hooks/useCart";
 import RemainderComponent from "@/components/remainder/RemainderComponent";
 import { getCurrentDate } from "@/utils/helpers/getCurrentDate";
 import { reset } from "@/redux/notificationSlice";
+import Navbar from "./navbar/NavBar";
 const Header: React.FC = () => {
+  const isLogin = typeof window !== "undefined" && document.cookie.includes("access_token");
   const dispatch = useDispatch();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -118,7 +119,7 @@ const Header: React.FC = () => {
         <div className="flex items-center space-x-4">Tiếng Việt</div>
       </div>
       {/* Desktop Navbar */}
-      <Navbar user={user} />
+      <Navbar user={user} isLogin={isLogin} />
       {/* Mobile Navbar */}
       <div className="lg:hidden flex items-center justify-between p-4 shadow-md">
         {/* Menu Icon */}

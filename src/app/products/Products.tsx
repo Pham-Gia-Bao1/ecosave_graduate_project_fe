@@ -58,8 +58,10 @@ export default function ProductListing({
         {/* Danh sách sản phẩm */}
         <main className="flex-1 flex-wrap w-full">
           <Products
+            className="lg:grid-cols-4"
             products={products}
             loading={loading}
+            ITEMS_PER_PAGE={8}
           />
         </main>
       </div>

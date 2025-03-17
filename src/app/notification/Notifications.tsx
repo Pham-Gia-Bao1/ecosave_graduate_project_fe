@@ -4,7 +4,7 @@ import useSocket from "@/hooks/useSocket";
 import Image from "next/image";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import calculateDistance from "@/utils/calculateDistance";
-import { Product, Store } from "@/types";
+import { Notification, Product, Store } from "@/types";
 import { useDispatch } from "react-redux";
 import { increment, setCount } from "@/redux/notificationSlice";
 import Link from "next/link";
@@ -14,12 +14,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 const realTimeServerURL = "http://localhost:4000";
 import { motion } from "framer-motion";
-interface Notification {
-  event: string;
-  data: { product: Product };
-  time: string;
-  isRead?: boolean;
-}
+
 export default function NotificationsComponent() {
   const dispatch = useDispatch();
   const { notifications: newNotifications } = useSocket(realTimeServerURL) as {
@@ -225,10 +220,15 @@ export default function NotificationsComponent() {
                       </h3>
                       <span>
                         {userLocation
-                          ? `${calculateDistance(
-                              [store.latitude, store.longitude],
-                              userLocation
-                            )} km`
+                          ? (() => {
+                              const distance = calculateDistance(
+                                [store.latitude, store.longitude],
+                                userLocation
+                              );
+                              return distance < 1
+                                ? `${(distance * 1000).toFixed(0)}m`
+                                : `${distance.toFixed(2)} km`;
+                            })()
                           : "Đang xác định khoảng cách"}
                       </span>
                     </div>

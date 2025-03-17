@@ -35,13 +35,14 @@ export default function Home({
   const [products, setProducts] = useState<Product[]>(listProducts);
   const images = useMemo(() => [Image1.src, Image2.src], []);
   const [index, setIndex] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 2) % images.length);
-    }, 3000);
 
-    return () => clearInterval(interval);
-  }, [images.length]);
+  useEffect(() => {
+  const interval = setInterval(() => {
+    setIndex((prevIndex) => (prevIndex + 1) % images.length);
+  }, 3000);
+
+  return () => clearInterval(interval);
+}, [images.length]);
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -237,14 +238,14 @@ export default function Home({
             Không có sản phẩm nào để hiển thị.
           </div>
         ) : (
-          <Products products={products} loading={loading} />
+          <Products className="lg:grid-cols-5" products={products} loading={loading} />
         )}
       </section>
 
       <section className="relative flex flex-col md:flex-row items-center justify-between h-auto">
         <ValuesSection />
       </section>
-      <section className="relative flex flex-col md:flex-row items-center justify-between h-auto bg-red-300">
+      <section className="relative flex flex-col md:flex-row items-center justify-between h-auto bg-gray-100">
         <HomeMapSecsion />
       </section>
       <section>

@@ -334,3 +334,10 @@ export type WishList = {
   updated_at: string;
   product: Product;
 };
+
+export interface Notification {
+  event: string;
+  data: { product: Product };
+  time: string;
+  isRead?: boolean;
+}

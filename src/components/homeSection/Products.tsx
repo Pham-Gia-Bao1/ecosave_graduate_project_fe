@@ -10,11 +10,11 @@ import {
 } from "react-icons/ai";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { increment, setTotalItems } from "@/redux/cartSlice";
+import {  setTotalItems } from "@/redux/cartSlice";
 import { useParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import fallbackImage from "../../assets/images/products/product1.png";
-import { Product } from "@/types";
+import { Notification, Product, ProductFilters } from "@/types";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { getProducts, addToCart, getCart } from "@/api";
 import ToastNotification from "../toast/ToastNotification";
@@ -24,22 +24,28 @@ import SubLoading from "../loading/subLoading";
 import { motion } from "framer-motion";
 import { useWishlist } from "@/hooks/useWishlist";
 import { RootState } from "@/redux/store";
+import useSocket from "@/hooks/useSocket";
+import clsx from "clsx";
 // Constants
-const ITEMS_PER_PAGE = 8;
+
 const DEBOUNCE_DELAY = 500;
 const TOAST_DURATION = 3000;
+const realTimeServerURL = "http://localhost:4000";
 interface ProductsProps {
   products: Product[];
   loading?: boolean;
+  className?: string;
+  ITEMS_PER_PAGE?: number;
 }
 export default function Products({
   products: initialProducts,
   loading: initialLoading,
-}: ProductsProps) {
+  className = "",
+  ITEMS_PER_PAGE = 10
+}: ProductsProps & { className?: string }) {
   const { handleAddToWishlist, handleRemove } = useWishlist();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
   const favoriteProductIds = wishlist.map((item) => item.product_id);
-
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.user);
   const userLocation = useUserLocation();
@@ -59,6 +65,69 @@ export default function Products({
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+  const { notifications: newNotifications } = useSocket(realTimeServerURL) as {
+    notifications: Notification[];
+  };
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const CACHE_TTL = 15 * 60 * 1000; // 15 phút (có thể điều chỉnh)
+
+  const updateCache = (updatedProducts: Product[], filters: ProductFilters) => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const cacheKey = `products_${JSON.stringify(filters)}`;
+      const cacheTTLKey = `${cacheKey}_ttl`;
+      const ttl = Date.now() + CACHE_TTL;
+
+      sessionStorage.setItem(cacheKey, JSON.stringify(updatedProducts));
+      sessionStorage.setItem(cacheTTLKey, ttl.toString());
+
+      console.log("🟢 Cache updated:", cacheKey);
+    } catch (error) {
+      console.error("❌ Failed to update cache:", error);
+    }
+  };
+
+  // Handle product creation
+  const handleProductCreated = (notification: Notification) => {
+    const newProduct = notification.data.product;
+      setListProducts((prevProducts) => {
+        const updatedProducts = [newProduct, ...prevProducts];
+        updateCache(updatedProducts, { page: 1 }); // Truyền filters vào
+        return updatedProducts;
+      });
+  };
+
+  // Handle product update
+  const handleProductUpdated = (notification: Notification) => {
+    const updatedProduct = notification.data.product;
+
+    setListProducts((prevProducts) => {
+      const updatedProducts = prevProducts.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product
+      );
+      updateCache(updatedProducts, { page: 1 }); // Truyền filters vào
+      return updatedProducts;
+    });
+  };
+
+  // Gộp useEffect lại để tránh lặp code
+  useEffect(() => {
+    newNotifications.forEach((notification) => {
+      switch (notification.event) {
+        case "product.created":
+          handleProductCreated(notification);
+          break;
+        case "product.updated":
+          handleProductUpdated(notification);
+          break;
+        default:
+          break;
+      }
+    });
+  }, [newNotifications, storeId]); // Đảm bảo dependencies đầy đủ
+
+
   const [toast, setToast] = useState<{
     message: string;
     keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
@@ -144,16 +213,24 @@ export default function Products({
   // Add to cart handler
   const handleAddToCart = useCallback(
     async (product: Product) => {
-      setLoading((prev) => ({ ...prev, [product.id]: true }));
-      const result = await addToCart(product.id, 1);
-      setToast({
-        message: result.message,
-        keyword: result.success ? "SUCCESS" : "ERROR",
-      });
-      const cart = await getCart();
-      dispatch(setTotalItems(cart.data.total_items));
-      setLoading((prev) => ({ ...prev, [product.id]: false }));
-      setTimeout(() => setToast(null), TOAST_DURATION);
+      try {
+        setLoading((prev) => ({ ...prev, [product.id]: true }));
+        const result = await addToCart(product.id, 1);
+        if (!result.success) throw new Error(result.message);
+
+        const cart = await getCart();
+        dispatch(setTotalItems(cart.data.total_items));
+        setToast({ message: result.message, keyword: "SUCCESS" });
+      } catch (error) {
+        setToast({
+          message:
+            error instanceof Error ? error.message : "Failed to add to cart",
+          keyword: "ERROR",
+        });
+      } finally {
+        setLoading((prev) => ({ ...prev, [product.id]: false }));
+        setTimeout(() => setToast(null), TOAST_DURATION);
+      }
     },
     [dispatch]
   );
@@ -183,20 +260,20 @@ export default function Products({
       exit={{ opacity: 0, x: -10, scale: 0.98 }}
       transition={{ type: "spring", stiffness: 80, damping: 16 }}
       key={product.id}
-      className="relative rounded-lg shadow-soft bg-white pb-5 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
+      className="relative rounded-lg shadow-soft bg-white pb-3 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
     >
       {product.discount_percent > 0 && (
-        <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">
-          Giảm {product.discount_percent}%
+        <span className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] font-bold px-1 py-0.5 rounded">
+          -{product.discount_percent}%
         </span>
       )}
       <Link href={`/products/${product.id}`} className="block">
-        <div className="w-full h-[300px] overflow-hidden bg-gray-200">
+        <div className="w-full h-[200px] overflow-hidden bg-gray-200 rounded-t-lg">
           <Image
             src={product.images[0]?.image_url || fallbackImage.src}
             alt={product.name}
-            width={600}
-            height={600}
+            width={400}
+            height={400}
             loading="lazy"
             className="w-full h-full object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -204,13 +281,13 @@ export default function Products({
           />
         </div>
       </Link>
-      <div className="mt-3 px-4">
-        <div className="flex justify-between">
-          <p className="flex-1 text-sm max-w-[100px] text-gray-500 truncate">
+      <div className="mt-3 px-3  space-y-1">
+        <div className="flex justify-between ">
+          <p className="text-xs max-w-[90px] text-gray-500 truncate">
             {product.category.name}
           </p>
-          <div className="flex-1 text-gray-500 flex justify-end gap-3 items-center">
-            <p className="text-sm truncate">
+          <div className="text-gray-500 flex gap-2 items-center text-xs">
+            <p className="truncate">
               {userLocation
                 ? (() => {
                     const distance = calculateDistance(
@@ -222,38 +299,35 @@ export default function Products({
                       ? `${(distance * 1000).toFixed(0)}m`
                       : `${distance.toFixed(2)} km`;
                   })()
-                : "Không có thông tin vị trí"}
+                : "Không có vị trí"}
             </p>
-
-            <div className="w-[1px] h-[70%] bg-gray-400" />
-            <p className="text-sm max-w-[60px] truncate">
-              {product.store.store_name}
-            </p>
+            <div className="w-[1px] h-[60%] bg-gray-400" />
+            <p className="max-w-[50px] truncate">{product.store.store_name}</p>
           </div>
         </div>
         <Link href={`/products/${product.id}`} className="block">
-          <h3 className="text-[17px] font-semibold truncate hover:text-primary">
+          <h3 className="text-[15px] font-semibold truncate hover:text-primary">
             {product.name}
           </h3>
         </Link>
         <div className="flex justify-between items-center">
           <div className="flex">
-            <p className="text-primary-light font-bold mr-2">
+            <p className="text-primary-light font-bold text-sm">
               {formatMoney(Number(product.discounted_price), "VND")}
             </p>
-            <p className="text-gray-500 font-bold line-through">
+            <p className="text-gray-500 font-bold line-through text-xs ml-1">
               {formatMoney(Number(product.original_price), "VND")}
             </p>
           </div>
           <div className="flex items-center gap-1">
-            {product.rating}{" "}
+            <span className="text-sm">{product.rating}</span>
             <AiFillStar className="text-yellow-400" size={16} />
           </div>
         </div>
       </div>
-      <div className="flex justify-between mt-4 px-4">
+      <div className="flex justify-between mt-3 px-3">
         <motion.button
-          className={`p-2 border rounded-full transition-all duration-300 ${
+          className={`p-1.5 border rounded-full transition-all duration-300 ${
             favoriteProductIds.includes(product.id)
               ? "bg-orange-500 text-white"
               : "bg-white text-red-500 hover:bg-red-500 hover:text-white"
@@ -266,20 +340,20 @@ export default function Products({
           onClick={() => toggleFavorite(product)}
         >
           {favoriteProductIds.includes(product.id) ? (
-            <AiFillHeart size={20} />
+            <AiFillHeart size={18} />
           ) : (
-            <AiOutlineHeart size={20} />
+            <AiOutlineHeart size={18} />
           )}
         </motion.button>
 
         <button
           onClick={() => handleAddToCart(product)}
-          className="p-2 w-[75%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
+          className="p-1.5 w-[70%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
         >
           {loading[product.id] ? (
             <SubLoading />
           ) : (
-            <AiOutlineShoppingCart size={20} />
+            <AiOutlineShoppingCart size={18} />
           )}
         </button>
       </div>
@@ -327,7 +401,7 @@ export default function Products({
         <h4 className="text-2xl font-bold">Sản Phẩm Bán Chạy</h4>
         <div className="relative">
           <button
-            onClick={() => setSearchQuery(searchQuery ? "" : " ")} // Toggle search visibility
+            onClick={() => setIsSearchVisible(!isSearchVisible)}
             className="bg-orange-500 px-4 py-[10px] rounded"
           >
             <FaSearch className="text-white text-xl hover:text-primary-light transition-colors duration-300" />
@@ -337,7 +411,9 @@ export default function Products({
             onChange={(e) => handleSearchProduct(e.target.value)}
             type="text"
             placeholder="Tìm kiếm..."
-            className={`search-input text-black ${searchQuery ? "open" : ""}`}
+            className={`search-input text-black border p-2 transition-all duration-300 ${
+              isSearchVisible ? "block w-48 open" : "hidden"
+            }`}
           />
         </div>
       </div>
@@ -350,7 +426,12 @@ export default function Products({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div
+              className={clsx(
+                "grid grid-cols-2 md:grid-cols-3 gap-6",
+                className
+              )}
+            >
               {currentProducts.map(renderProductCard)}
             </div>
             {renderPagination()}

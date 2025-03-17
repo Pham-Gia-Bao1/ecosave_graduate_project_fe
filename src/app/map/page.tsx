@@ -7,7 +7,11 @@ import { getNearingStores, getProducts } from "@/api";
 import Products from "@/components/homeSection/Products";
 import ClientLocation from "./ClientLocation";
 // Server component to fetch data
-const MapPage = async ({ searchParams }: { searchParams: { lat?: string, lng?: string } }) => {
+const MapPage = async ({
+  searchParams,
+}: {
+  searchParams: { lat?: string; lng?: string };
+}) => {
   const page = 1;
   let products: Product[] | null = null;
   let loading = true;
@@ -39,7 +43,13 @@ const MapPage = async ({ searchParams }: { searchParams: { lat?: string, lng?: s
         loadingProps={false}
       />
       <section className="relative min-h-96 px-12 flex flex-col md:flex-row items-start justify-between h-auto">
-        <Products products={products} loading={loading} />
+        <Products
+          className="lg:grid-cols-5"
+          products={products}
+          loading={loading}
+          ITEMS_PER_PAGE={10}
+
+        />
       </section>
     </Suspense>
   );

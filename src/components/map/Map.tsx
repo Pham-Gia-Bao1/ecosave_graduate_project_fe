@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-const accessToken =
-  process.env.MAP_TITLE_KEY || "yn7zQK2me9A32r6ZVGl5BuBYBwjifSF3dqBbo9Wp";
+const accessToken =  "3CQs7bV6GEP3O2s6qtWkhL30m1mAgZP4KeftcQlo"; // map titletitle
 const mapLinkCss =
   process.env.MAP_CSS_LINK ||
   "https://tiles.goong.io/assets/goong_map_web.json";
@@ -44,7 +43,7 @@ const HomeMapSection = () => {
       <div ref={mapContainerRef} className="w-full h-[300px]"></div>
       <Link href="/map">
         <p className="absolute top-2 right-2 bg-white text-primary px-3 py-1 rounded shadow">
-          View Full Map
+          Xem nhiều hơn
         </p>
       </Link>
     </div>

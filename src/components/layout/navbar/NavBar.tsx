@@ -27,9 +27,10 @@ import { reset } from "@/redux/notificationSlice";
 import { logout } from "@/api";
 export interface NavbarProps {
   user: UserProfile | null;
+  isLogin: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   useNotifications(); // Kích hoạt lấy thông báo ngay khi Navbar render
   useCart();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
@@ -57,7 +58,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const [typeOfNotification, setTypeOfNotification] = useState<
     "new" | "reminder"
   >("new");
-  
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
     dispatch(reset());
@@ -85,9 +86,9 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
   }, []);
 
   const handleLogout = async () => {
-      setLogoutLoading(true); 
+      setLogoutLoading(true);
       await logout(dispatch);
-      setLogoutLoading(false); 
+      setLogoutLoading(false);
       router.push("/login");
     };
 
@@ -165,11 +166,11 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
             </div>
           ))}
         {user ? (
-          <div 
-            className="relative" 
+          <div
+            className="relative"
             ref={profileDropdownRef}
           >
-            <div 
+            <div
               className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300"
               onClick={toggleProfileDropdown}
               onMouseEnter={() => setIsProfileDropdownOpen(true)}
@@ -190,7 +191,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
                 </p>
               </div>
             </div>
-            
+
             {/* Profile Dropdown Modal */}
             {isProfileDropdownOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg z-50 overflow-hidden">
@@ -216,27 +217,27 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Menu Options */}
                 <div className="py-2">
                   <Link href="/order-history" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
                     <ClipboardList className="text-gray-600" fontSize="small" />
                     <span className="text-gray-800">Xem lịch sử đơn hàng</span>
                   </Link>
-                  
+
                   <Link href="/expiry-items-reminder" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
                     <Package className="text-gray-600" fontSize="small" />
                     <span className="text-gray-800">Quản lý kho sản phẩm nhắc nhở</span>
                   </Link>
-                  
+
                   <Link href="/favorite-products" onClick={() => setIsProfileDropdownOpen(false)}>
                     <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
                       <Heart className="text-gray-600" fontSize="small" />
                       <span className="text-gray-800">Xem các sản phẩm yêu thích</span>
                     </div>
                   </Link>
-                  
-                  <button 
+
+                  <button
                     onClick={() => {
                       setIsProfileDropdownOpen(false);
                       handleLogout();

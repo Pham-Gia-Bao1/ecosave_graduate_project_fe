@@ -5,6 +5,8 @@ import axios from 'axios';
 import { redirect } from 'next/navigation';
 const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 const MAP_KEY = process.env.NEXT_PUBLIC_MAP_KEY;
+const CACHE_DURATION = 5 * 60 * 1000;
+import md5 from "crypto-js/md5";
 // Fetch the CSRF token
 const getCSRF = async () => {
   try {
@@ -336,40 +338,67 @@ export async function makeNewPayment(total: number): Promise<string> {
     throw new Error("Payment processing failed");
   }
 }
-export const getCart = async () => {
+
+const CACHE_KEY = "cart_data";
+const CACHE_TTL_KEY = "cart_data_ttl";
+
+// 🟢 Xóa cache giỏ hàng
+const clearCartCache = () => {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_TTL_KEY);
+};
+
+// 🟢 Lưu giỏ hàng vào cache
+const saveCartToCache = (data: any) => {
+  localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  localStorage.setItem(CACHE_TTL_KEY, String(Date.now() + CACHE_DURATION));
+};
+
+export const getCart = async (forceRefresh = false) => {
   const token = localStorage.getItem("access_token");
   if (!token) {
-    redirect("/login")
+    redirect("/login");
+    return null;
   }
+
+  // Nếu không cần làm mới, kiểm tra cache
+  if (!forceRefresh) {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedTTL = localStorage.getItem(CACHE_TTL_KEY);
+
+    if (cachedData && cachedTTL && Date.now() < Number(cachedTTL)) {
+      console.log("🔵 Lấy giỏ hàng từ cache");
+      return JSON.parse(cachedData);
+    }
+  }
+
   try {
+    console.log("🟢 Gọi API để lấy giỏ hàng...");
     const response = await axios.get(`${serverUrl}/cart`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     });
+
+    // Lưu cache giỏ hàng mới
+    saveCartToCache(response.data);
+
+    console.log("✅ Giỏ hàng:", response.data);
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      console.error("Lỗi API:", error.response.data);
-      throw new Error(error.response.data?.error || "Không thể lấy dữ liệu giỏ hàng");
-    } else if (error.request) {
-      console.error("Không thể kết nối đến server:", error.request);
-      throw new Error("Không thể kết nối đến máy chủ, vui lòng thử lại.");
-    } else {
-      console.error("Lỗi không xác định:", error.message);
-      throw new Error("Đã xảy ra lỗi không xác định.");
-    }
+    console.error("❌ Lỗi khi lấy giỏ hàng:", error.message);
+    throw new Error("Không thể lấy dữ liệu giỏ hàng.");
   }
 };
 export const addToCart = async (productId: number, quantity: number) => {
   const token = localStorage.getItem("access_token");
-  console.log("token: ", token);
   if (!token) {
     return { success: false, message: "Bạn chưa đăng nhập. Vui lòng đăng nhập để tiếp tục." };
   }
+
   try {
-    await axios.post(
+    const response = await axios.post(
       `${serverUrl}/cart/add`,
       { product_id: productId, quantity },
       {
@@ -379,24 +408,18 @@ export const addToCart = async (productId: number, quantity: number) => {
         },
       }
     );
+
+    // 🟢 Xóa cache để đảm bảo lấy dữ liệu mới
+    clearCartCache();
+    console.log("✅ Sản phẩm đã thêm vào giỏ hàng!");
+
     return { success: true, message: "Sản phẩm đã được thêm vào giỏ hàng! 🛒" };
   } catch (error: any) {
-    let errorMessage = "Không thể thêm sản phẩm vào giỏ hàng.";
-    if (error.response) {
-      const apiError = error.response.data?.error;
-      if (apiError === "This product is out of stock.") {
-        errorMessage = "Sản phẩm đã hết hàng, vui lòng thử lại sau.";
-      } else {
-        errorMessage = apiError || errorMessage;
-      }
-    } else if (error.request) {
-      errorMessage = "Không thể kết nối đến máy chủ, vui lòng thử lại.";
-    } else {
-      errorMessage = "Đã xảy ra lỗi không xác định.";
-    }
-    return { success: false, message: errorMessage };
+    console.error("❌ Lỗi khi thêm sản phẩm:", error.message);
+    return { success: false, message: "Không thể thêm sản phẩm vào giỏ hàng." };
   }
 };
+
 export const getCartDetail = async (storeId: number) => {
   const token = localStorage.getItem("access_token");
   if (!token) {
@@ -462,31 +485,30 @@ export const removeCartItem = async (storeId: number, productId: number) => {
   if (!token) {
     return null;
   }
+
   try {
     const response = await axios.delete(`${serverUrl}/cart/remove-item`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       data: {
         store_id: storeId,
-        product_id: productId
-      }
+        product_id: productId,
+      },
     });
+
+    // 🟢 Xóa cache để cập nhật lại giỏ hàng
+    clearCartCache();
+    console.log("✅ Sản phẩm đã bị xóa khỏi giỏ hàng!");
+
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      console.error("Lỗi API khi xóa item:", error.response.data);
-      throw new Error(error.response.data?.error || "Không thể xóa sản phẩm khỏi giỏ hàng");
-    } else if (error.request) {
-      console.error("Không thể kết nối đến server:", error.request);
-      throw new Error("Không thể kết nối đến máy chủ, vui lòng thử lại.");
-    } else {
-      console.error("Lỗi không xác định:", error.message);
-      throw new Error("Đã xảy ra lỗi không xác định.");
-    }
+    console.error("❌ Lỗi khi xóa sản phẩm:", error.message);
+    throw new Error("Không thể xóa sản phẩm khỏi giỏ hàng.");
   }
 };
+
 // Define a type for the order data
 export interface OrderData {
   id: number;
