@@ -294,14 +294,14 @@
   border-color: #0b9d96;
 }
 
-.loader {
+.loader1 {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   position: relative;
   animation: rotate 1s linear infinite
 }
-.loader::before {
+.loader1::before {
   content: "";
   box-sizing: border-box;
   position: absolute;

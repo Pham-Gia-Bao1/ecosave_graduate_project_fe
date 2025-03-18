@@ -54,6 +54,22 @@ const BarcodeScanner = () => {
     toast: null,
   });
 
+  const [availableDays, setAvailableDays] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (state.product?.expiryDate) {
+      const today = new Date();
+      const expiry = new Date(state.product.expiryDate);
+      const diffDays = Math.ceil(
+        (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      // Lọc danh sách số ngày nhắc nhở hợp lý
+      const reminderDays = [1, 2, 3, 4, 5].filter((day) => day <= diffDays);
+      setAvailableDays(reminderDays);
+    }
+  }, [state.product?.expiryDate]);
+
   // Quagga initialization và scanning logic
   useEffect(() => {
     if (!state.isScanning || !videoRef.current) return;
@@ -185,9 +201,9 @@ const BarcodeScanner = () => {
     [toggleModal, storeProductToRemainder]
   );
 
+  console.log(state.product);
   const ProductDisplay = memo(({ product }: { product: ProductScan }) => (
     <div className="relative flex items-center justify-center min-h-[400px] mt-6">
-
       {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -235,12 +251,14 @@ const BarcodeScanner = () => {
             <FaRedo className="text-gray-700" />
             Quét lại
           </button>
-          {product && <Link href="/expiry-items-reminder">
-            <button className="px-6 py-2 flex items-center gap-2 bg-primary text-white rounded-lg hover:bg-primary transition-all duration-300 shadow-md">
-              <FaEye />
-              Xem sản phẩm đã lưu
-            </button>
-          </Link>}
+          {product && (
+            <Link href="/expiry-items-reminder">
+              <button className="px-6 py-2 flex items-center gap-2 bg-primary text-white rounded-lg hover:bg-primary transition-all duration-300 shadow-md">
+                <FaEye />
+                Xem sản phẩm đã lưu
+              </button>
+            </Link>
+          )}
         </div>
       </motion.div>
     </div>
@@ -322,34 +340,40 @@ const BarcodeScanner = () => {
                     setState((prev) => ({ ...prev, product }))
                   }
                 />
-                <div className="flex justify-end w-full items-center gap-3 mt-4 px-4">
+                <div
+                  className={`flex w-full items-center gap-3 mt-4 px-4 ${
+                    state.product ? "justify-end" : "justify-center"
+                  }`}
+                >
                   <button
                     onClick={restartScanning}
                     className="px-4 py-2 bg-primary hover:bg-primary-light transition shadow-lg rounded text-white"
                   >
                     🔄 Quét lại
                   </button>
-                  {state.product &&
-                  new Date(state.product.expiryDate) < new Date() ? (
-                    <button
-                      disabled
-                      className="px-4 py-2 rounded shadow-lg bg-gray-400 text-white opacity-50 cursor-not-allowed"
-                    >
-                      ❌ Đã hết hạn
-                    </button>
-                  ) : (
-                    <button
-                      onClick={toggleModal}
-                      disabled={state.loading}
-                      className={`px-4 py-2 rounded shadow-lg transition ${
-                        state.loading
-                          ? "bg-gray-400 opacity-50 cursor-not-allowed"
-                          : "bg-primary hover:bg-primary-light text-white"
-                      }`}
-                    >
-                      {state.loading ? "⏳ Đang lưu..." : "⭐ Lưu sản phẩm"}
-                    </button>
-                  )}
+
+                  {state.product ? (
+                    new Date(state.product.expiryDate) < new Date() ? (
+                      <button
+                        disabled
+                        className="px-4 py-2 rounded shadow-lg bg-gray-400 text-white opacity-50 cursor-not-allowed"
+                      >
+                        ❌ Đã hết hạn
+                      </button>
+                    ) : (
+                      <button
+                        onClick={toggleModal}
+                        disabled={state.loading}
+                        className={`px-4 py-2 rounded shadow-lg transition ${
+                          state.loading
+                            ? "bg-gray-400 opacity-50 cursor-not-allowed"
+                            : "bg-primary hover:bg-primary-light text-white"
+                        }`}
+                      >
+                        {state.loading ? "⏳ Đang lưu..." : "⭐ Lưu sản phẩm"}
+                      </button>
+                    )
+                  ) : null}
                 </div>
               </motion.div>
             )}
@@ -391,15 +415,21 @@ const BarcodeScanner = () => {
                   Nhận thông báo trước ngày hết hạn bao lâu?
                 </h2>
                 <div className="flex space-x-2">
-                  {[1, 2, 3, 4, 5].map((day) => (
-                    <button
-                      key={day}
-                      onClick={() => handleSaveReminder(day)}
-                      className="px-3 py-2 bg-primary text-white rounded hover:bg-primary-light"
-                    >
-                      {day} ngày
-                    </button>
-                  ))}
+                  {availableDays.length > 0 ? (
+                    [1, 2, 3, 4, 5].map((day) => (
+                      <button
+                        key={day}
+                        onClick={() => handleSaveReminder(day)}
+                        className="px-3 py-2 rounded text-white transition
+                   bg-primary hover:bg-primary-light disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        disabled={day > availableDays[availableDays.length - 1]} // Vô hiệu hóa nếu ngày lớn hơn ngày còn lại
+                      >
+                        {day} ngày
+                      </button>
+                    ))
+                  ) : (
+                    <span className="text-red-500">Sản phẩm đã hết hạn!</span>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
