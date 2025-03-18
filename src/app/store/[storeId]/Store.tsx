@@ -10,6 +10,7 @@ import TestimonialSlider from "./TestimonialSlider";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import calculateDistance from "@/utils/calculateDistance";
 import Direction from "@/app/map/direction/Direction";
+import { convertToVietnamTime } from "@/utils/helpers/convertToVietnamTime";
 
 interface StorePageProps {
   store: Store;
@@ -131,7 +132,11 @@ const StorePage: React.FC<StorePageProps> = ({
         >
           {[
             { icon: "📧", title: "Email", text: store.contact_email },
-            { icon: "⏰", title: "Giờ hoạt động", text: store.opening_hours },
+            {
+              icon: "⏰",
+              title: "Giờ hoạt động",
+              text: convertToVietnamTime(store.opening_hours ?? ""),
+            },
             { icon: "📍", title: "Địa chỉ", text: store.address },
             { icon: "📞", title: "Số điện thoại", text: store.contact_phone },
           ].map((item, index) => (
@@ -149,7 +154,6 @@ const StorePage: React.FC<StorePageProps> = ({
             </motion.div>
           ))}
         </motion.section>
-
 
         <section className="lg:px-28 px-3 relative -mt-4">
           <motion.div
@@ -211,7 +215,7 @@ const StorePage: React.FC<StorePageProps> = ({
             className="bg-white text-primary px-6 py-3 rounded-full font-semibold text-lg
               hover:bg-red-50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
           >
-            Xem đường đi
+            {isOpenDirection ? "Đóng Map" : "Xem đường đi"}
           </button>
           {direction && isOpenDirection && (
             <div className="bg-gray-300 w-full h-[300px]">

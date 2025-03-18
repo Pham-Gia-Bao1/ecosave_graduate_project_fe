@@ -15,6 +15,11 @@ import ToastNotification from "@/components/toast/ToastNotification";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDateTime } from "@/utils";
+import {
+  convertToVietnamTime,
+  removeAMPM,
+} from "@/utils/helpers/convertToVietnamTime";
+import { FaBoxOpen, FaCheckCircle, FaEye, FaRedo } from "react-icons/fa";
 
 // Định nghĩa types
 interface Toast {
@@ -61,12 +66,18 @@ const BarcodeScanner = () => {
           constraints: { facingMode: "environment", frameRate: { ideal: 30 } },
         },
         decoder: {
-          readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader"],
+          readers: [
+            "code_128_reader",
+            "ean_reader",
+            "ean_8_reader",
+            "upc_reader",
+          ],
         },
         locate: true,
         patchSize: "small",
       },
-      (err?: Error) => {  // Changed to optional parameter
+      (err?: Error) => {
+        // Changed to optional parameter
         if (err) {
           console.error("Quagga initialization failed:", err);
           setState((prev) => ({
@@ -82,14 +93,6 @@ const BarcodeScanner = () => {
     const handleDetected = (data: QuaggaJSResultObject) => {
       const scannedCode = data.codeResult.code;
       if (!scannedCode || seenCodes.current.has(scannedCode)) return;
-
-      if (scannedCode.length !== 13) {
-        setState((prev) => ({
-          ...prev,
-          toast: { message: "Mã vạch phải đủ 13 số", type: "ERROR" },
-        }));
-        return;
-      }
 
       seenCodes.current.add(scannedCode);
       setTimeout(() => seenCodes.current.delete(scannedCode), 1000);
@@ -182,52 +185,67 @@ const BarcodeScanner = () => {
     [toggleModal, storeProductToRemainder]
   );
 
-  // Memoized Product Display Component
   const ProductDisplay = memo(({ product }: { product: ProductScan }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-center p-6 bg-gray-50 rounded-xl"
-    >
-      <h2 className="text-2xl font-semibold text-green-700 mb-4">
-        Sản phẩm đã được lưu!
-      </h2>
-      <div className="space-y-3">
-        <p className="text-gray-600 text-lg">
-          Tiêu đề: <span className="font-medium text-gray-800">{product.title}</span>
-        </p>
-        <p className="text-gray-600 text-lg">
-          Hạn sử dụng:{" "}
-          <span className="font-medium text-gray-800">
-            {formatDateTime(product.expiryDate)}
-          </span>
-        </p>
-      </div>
-      <div className="flex flex-wrap justify-center gap-4 mt-6">
-        <Image
-          src={product.images[0]}
-          alt={`Hình ảnh sản phẩm ${product.title}`}
-          width={120}
-          height={120}
-          className="rounded-lg shadow-md object-cover"
-        />
-      </div>
-      <div className="flex gap-3 justify-center items-center mt-6">
-        <button
-          onClick={restartScanning}
-          className="px-6 py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-all duration-300 shadow-md"
-          aria-label="Quét lại mã vạch"
-        >
-          Quét lại
-        </button>
-        <Link href="/expiry-items-reminder">
-          <button className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-all duration-300 shadow-md">
-            Xem sản phẩm đã lưu
+    <div className="relative flex items-center justify-center min-h-[400px] mt-6">
+
+      {/* Main Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center p-6 bg-white shadow-soft relative z-10"
+      >
+        {/* Title */}
+        <h2 className="text-2xl font-semibold text-primary flex items-center justify-center gap-2 mb-5">
+          <FaCheckCircle className="text-primary text-3xl" />
+          Sản phẩm đã được lưu!
+        </h2>
+
+        {/* Product Details */}
+        <div className="space-y-4 flex justify-center items-center flex-col">
+          <p className="text-gray-700 text-lg flex items-center gap-2">
+            <span className="font-semibold">Tên sản phẩm</span>
+            <span className="ml-1 text-gray-900">{product.title}</span>
+          </p>
+          <p className="text-gray-700 text-lg flex items-center gap-2">
+            <span className="font-semibold">Hạn sử dụng:</span>
+            <span className="ml-1 text-gray-900">
+              {convertToVietnamTime(formatDateTime(product.expiryDate))}
+            </span>
+          </p>
+        </div>
+
+        {/* Product Image */}
+        <div className="flex justify-center mt-6">
+          <Image
+            src={product.images[0]}
+            alt={`Hình ảnh sản phẩm ${product.title}`}
+            width={340}
+            height={340}
+            className="rounded-xl shadow-md object-cover border border-gray-200"
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-4 justify-center items-center mt-6">
+          <button
+            onClick={restartScanning}
+            className="px-6 py-2 flex items-center gap-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-all duration-300 shadow-md border border-gray-300"
+            aria-label="Quét lại mã vạch"
+          >
+            <FaRedo className="text-gray-700" />
+            Quét lại
           </button>
-        </Link>
-      </div>
-    </motion.div>
+          {product && <Link href="/expiry-items-reminder">
+            <button className="px-6 py-2 flex items-center gap-2 bg-primary text-white rounded-lg hover:bg-primary transition-all duration-300 shadow-md">
+              <FaEye />
+              Xem sản phẩm đã lưu
+            </button>
+          </Link>}
+        </div>
+      </motion.div>
+    </div>
   ));
+
   ProductDisplay.displayName = "ProductDisplay";
 
   // Render
@@ -242,7 +260,10 @@ const BarcodeScanner = () => {
           } gap-0 p-4 text-white max-w-full w-auto mx-auto`}
         >
           {state.toast && (
-            <ToastNotification message={state.toast.message} keyword={state.toast.type} />
+            <ToastNotification
+              message={state.toast.message}
+              keyword={state.toast.type}
+            />
           )}
 
           <AnimatePresence>
@@ -278,8 +299,12 @@ const BarcodeScanner = () => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 flex flex-col gap-3 justify-center items-center bg-black bg-opacity-70 z-50"
               >
-                <h2 className="text-xl font-bold text-white">✅ Quét thành công!</h2>
-                <p className="text-green-400 font-semibold">Mã vạch: {state.barcode}</p>
+                <h2 className="text-xl font-bold text-white">
+                  ✅ Quét thành công!
+                </h2>
+                <p className="text-green-400 font-semibold">
+                  Mã vạch: {state.barcode}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -304,7 +329,8 @@ const BarcodeScanner = () => {
                   >
                     🔄 Quét lại
                   </button>
-                  {state.product && new Date(state.product.expiryDate) < new Date() ? (
+                  {state.product &&
+                  new Date(state.product.expiryDate) < new Date() ? (
                     <button
                       disabled
                       className="px-4 py-2 rounded shadow-lg bg-gray-400 text-white opacity-50 cursor-not-allowed"

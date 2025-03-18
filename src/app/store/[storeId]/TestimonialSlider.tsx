@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, Typography, Rating, IconButton } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
-// Định nghĩa kiểu dữ liệu cho lời chứng thực
 interface LoiChungThuc {
   ten: string;
   danhGia: number;
   binhLuan: string;
 }
 
-// Dữ liệu mẫu về lời chứng thực
 const danhSachLoiChungThuc: LoiChungThuc[] = [
   {
     ten: "Phạm Hoàng Anh",
@@ -35,7 +32,6 @@ const danhSachLoiChungThuc: LoiChungThuc[] = [
 const TestimonialSlider: React.FC = () => {
   const [chiSoHienTai, setChiSoHienTai] = useState(0);
 
-  // Xử lý điều hướng
   const xuLyTiepTheo = () => {
     setChiSoHienTai((chiSoTruoc) =>
       chiSoTruoc === danhSachLoiChungThuc.length - 1 ? 0 : chiSoTruoc + 1
@@ -49,28 +45,15 @@ const TestimonialSlider: React.FC = () => {
   };
 
   return (
-    <Box className="py-12 bg-gray-50">
-      {/* Phần tiêu đề */}
-      <Box className="text-center mb-8">
-        <Typography
-          variant="h3"
-          className="text-4xl font-bold text-gray-900"
-          style={{ fontFamily: "inherit" }}
-        >
-          Khách Hàng Nói, chúng tôi Lắng Nghe
-        </Typography>
-        <Typography
-          variant="body1"
-          className="text-gray-600 mt-4 max-w-3xl mx-auto"
-        >
-          Khám phá những gì khách hàng trung thành của chúng tôi nói về trải nghiệm
-          với chúng tôi. Tìm hiểu các lời chứng thực thể hiện sự hài lòng của họ và
-          lý do tại sao chúng tôi là lựa chọn hàng đầu cho việc mua sắm tạp hóa tiện lợi.
-        </Typography>
-      </Box>
+    <div className="py-12 bg-gray-50">
+      <div className="text-center mb-8">
+        <h3 className="text-4xl font-bold text-gray-900">Khách Hàng Nói, chúng tôi Lắng Nghe</h3>
+        <p className="text-gray-600 mt-4 max-w-3xl mx-auto">
+          Khám phá những gì khách hàng trung thành của chúng tôi nói về trải nghiệm với chúng tôi.
+        </p>
+      </div>
 
-      {/* Phần trình chiếu */}
-      <Box className="relative max-w-6xl mx-auto px-4">
+      <div className="relative max-w-6xl mx-auto px-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={chiSoHienTai}
@@ -80,64 +63,44 @@ const TestimonialSlider: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
-            {/* Hiển thị 3 lời chứng thực cùng lúc */}
             {[0, 1, 2].map((doDoi) => {
               const chiSo = (chiSoHienTai + doDoi) % danhSachLoiChungThuc.length;
               const loiChungThuc = danhSachLoiChungThuc[chiSo];
               return (
-                <Box
-                  key={chiSo}
-                  className="bg-white p-6 rounded-lg text-center"
-                >
-                  {/* Placeholder cho hình ảnh khách hàng */}
-                  <Box className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4" />
-                  <Typography
-                    variant="h6"
-                    className="text-lg font-semibold text-gray-900"
-                  >
-                    {loiChungThuc.ten}
-                  </Typography>
-                  <Rating
-                    value={loiChungThuc.danhGia}
-                    readOnly
-                    className="my-2"
-                  />
-                  <Typography variant="body2" className="text-gray-600">
-                    {loiChungThuc.binhLuan}
-                  </Typography>
-                </Box>
+                <div key={chiSo} className="bg-white p-6 rounded-lg text-center">
+                  <h6 className="text-lg font-semibold text-gray-900">{loiChungThuc.ten}</h6>
+                  <p className="text-gray-600">{loiChungThuc.binhLuan}</p>
+                </div>
               );
             })}
           </motion.div>
         </AnimatePresence>
 
         {/* Mũi tên điều hướng */}
-        <IconButton
+        <button
           onClick={xuLyQuayLai}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 text-gray-700 p-2 bg-white rounded-full shadow-md"
         >
-          <ArrowBackIos />
-        </IconButton>
-        <IconButton
+          <FaArrowLeft />
+        </button>
+        <button
           onClick={xuLyTiepTheo}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-700 p-2 bg-white rounded-full shadow-md"
         >
-          <ArrowForwardIos />
-        </IconButton>
+          <FaArrowRight />
+        </button>
 
         {/* Chấm điều hướng */}
-        <Box className="flex justify-center mt-6">
+        <div className="flex justify-center mt-6">
           {danhSachLoiChungThuc.map((_, chiSo) => (
-            <Box
+            <div
               key={chiSo}
-              className={`w-3 h-3 mx-1 rounded-full ${
-                chiSo === chiSoHienTai ? "bg-green-500" : "bg-gray-300"
-              }`}
+              className={`w-3 h-3 mx-1 rounded-full ${chiSo === chiSoHienTai ? "bg-primary" : "bg-gray-300"}`}
             />
           ))}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,5 +1,6 @@
 import { ProductScan, ScanProductInfoProps } from "@/types";
 import { formatCurrency, formatDateTime, formatMoney } from "@/utils";
+import { removeAMPM } from "@/utils/helpers/convertToVietnamTime";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -95,11 +96,11 @@ export default function ScanProduct({
         <DetailItem label="Bảo hành" value={product.warrantyInformation} />
         <DetailItem
           label="Ngày sản xuất"
-          value={formatDateTime(product.manufacturingDate)}
+          value={removeAMPM(formatDateTime(product.manufacturingDate))}
         />
         <DetailItem
           label="Ngày hết hạn"
-          value={formatDateTime(product.expiryDate)}
+          value={removeAMPM(formatDateTime(product.expiryDate))}
         />
       </div>
     </div>
