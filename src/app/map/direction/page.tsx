@@ -5,8 +5,12 @@ import getCookie from "@/utils/helpers/getCookie";
 import Loading from "@/app/loading";
 
 export default function Page() {
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [storeLocation, setStoreLocation] = useState<[number, number] | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null
+  );
+  const [storeLocation, setStoreLocation] = useState<[number, number] | null>(
+    null
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -41,5 +45,9 @@ export default function Page() {
   const [ulat, ulng] = userLocation;
   const [slat, slng] = storeLocation;
 
-  return <Direction origin={`${ulat},${ulng}`} destination={`${slat},${slng}`} />;
+  return (
+    <div className="h-[600px]">
+      <Direction origin={`${ulat},${ulng}`} destination={`${slat},${slng}`} />
+    </div>
+  );
 }

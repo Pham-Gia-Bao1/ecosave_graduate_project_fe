@@ -36,12 +36,14 @@ interface ProductsProps {
   loading?: boolean;
   className?: string;
   ITEMS_PER_PAGE?: number;
+
 }
 export default function Products({
   products: initialProducts,
   loading: initialLoading,
   className = "",
-  ITEMS_PER_PAGE = 10
+  ITEMS_PER_PAGE = 10,
+ 
 }: ProductsProps & { className?: string }) {
   const { handleAddToWishlist, handleRemove } = useWishlist();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
