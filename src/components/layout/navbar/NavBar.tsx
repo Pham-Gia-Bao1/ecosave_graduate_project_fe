@@ -491,25 +491,21 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
               className="mt-6 pt-4 border-t flex flex-col gap-2"
             >
               <Link href="/wishlist">
-                <Button
+                <button
                   onClick={toggleWishlist}
-                  variant="outlined"
-                  startIcon={<FavoriteBorder />}
-                  fullWidth
-                  className="border-primary text-primary hover:bg-primary-light/20 p-4"
+                  className="w-full border border-primary text-primary hover:bg-primary-light/20 p-4 flex items-center justify-center gap-2 rounded-md"
                 >
+                  <FavoriteBorder />
                   Xem trang danh sách yêu thích
-                </Button>
+                </button>
               </Link>
-              <Button
-                variant="contained"
-                startIcon={<AddShoppingCart />}
-                fullWidth
+              <button
                 onClick={handleAddAllToCart}
-                className="bg-primary hover:bg-primary-light p-4 text-white font-semibold"
+                className="w-full bg-primary hover:bg-primary-light p-4 text-white font-semibold flex items-center justify-center gap-2 rounded-md"
               >
+                <AddShoppingCart />
                 Thêm tất cả vào giỏ hàng
-              </Button>
+              </button>
             </motion.div>
           )}
         </motion.div>

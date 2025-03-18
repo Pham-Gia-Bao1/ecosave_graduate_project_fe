@@ -43,7 +43,7 @@ export default function Products({
   loading: initialLoading,
   className = "",
   ITEMS_PER_PAGE = 10,
- 
+
 }: ProductsProps & { className?: string }) {
   const { handleAddToWishlist, handleRemove } = useWishlist();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
@@ -196,18 +196,18 @@ export default function Products({
           updated_at: new Date().toISOString(),
           product: product,
         });
-        setToast({ message: "Đã thêm vào wishlist", keyword: "SUCCESS" });
+        setToast({ message: "Đã thêm vào danh sách yêu thích", keyword: "SUCCESS" });
       } catch (error) {
-        console.error("Lỗi khi thêm vào wishlist:", error);
-        setToast({ message: "Lỗi khi thêm vào wishlist!", keyword: "ERROR" });
+        console.error("Lỗi khi thêm vào danh sách yêu thích:", error);
+        setToast({ message: "Lỗi khi thêm vào danh sách yêu thích!", keyword: "ERROR" });
       }
     } else {
       try {
         handleRemove(product.id);
-        setToast({ message: "Đã xóa khỏi wishlist", keyword: "SUCCESS" });
+        setToast({ message: "Đã xóa khỏi danh sách yêu thích", keyword: "SUCCESS" });
       } catch (error) {
-        console.error("Lỗi khi xóa khỏi wishlist:", error);
-        setToast({ message: "Lỗi khi xóa khỏi wishlist!", keyword: "ERROR" });
+        console.error("Lỗi khi xóa khỏi danh sách yêu thích:", error);
+        setToast({ message: "Lỗi khi xóa khỏi danh sách yêu thích!", keyword: "ERROR" });
       }
     }
   };

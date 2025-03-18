@@ -12,6 +12,7 @@ import { setTotalItems } from "@/redux/cartSlice";
 import { RootState } from "@/redux/store";
 import { PaymentItem, Store } from "@/types";
 import { formatCurrency, getCurrentDateTime } from "@/utils";
+import { convertToVietnamTime } from "@/utils/helpers/convertToVietnamTime";
 import getCookie from "@/utils/helpers/getCookie";
 import { FileText } from "lucide-react";
 import Link from "next/link";
@@ -222,24 +223,24 @@ const OrderReceipt = () => {
             <div className="p-4 overflow-y-auto flex-grow">
               <section className="mb-4 text-sm space-y-2">
                 <p>
-                  <span className="font-semibold">Mã đơn hàng:</span>
+                  <span className="font-semibold">Mã đơn hàng : </span>
                   {orderCode || "ECOSAVE99734636"}
                 </p>
                 <p>
-                  <span className="font-semibold">Tên khách hàng:</span>
+                  <span className="font-semibold">Tên khách hàng : </span>
                   {user?.username || "Gia Bao"}
                 </p>
                 <p>
-                  <span className="font-semibold">Tên cửa hàng:</span>
+                  <span className="font-semibold">Tên cửa hàng : </span>
                   {store?.store_name || "Winmart Đà Nẵng"}
                 </p>
                 <p>
-                  <span className="font-semibold">Địa chỉ lấy hàng:</span>
+                  <span className="font-semibold">Địa chỉ lấy hàng : </span>
                   {store?.address || "101B Lê Hữu Trác, Đà Nẵng"}
                 </p>
                 <p>
-                  <span className="font-semibold">Ngày mua:</span>
-                  {getCurrentDateTime()}
+                  <span className="font-semibold">Ngày mua : </span>
+                  {convertToVietnamTime(getCurrentDateTime())}
                 </p>
               </section>
               {/* Bảng sản phẩm */}
@@ -284,11 +285,11 @@ const OrderReceipt = () => {
               {/* Tổng thanh toán */}
               <div className="text-right mt-4 text-sm space-y-2">
                 <p>
-                  <span className="font-semibold">TỔNG TIỀN T.TOÁN:</span>
+                  <span className="font-semibold">TỔNG TIỀN T.TOÁN: </span>
                   {formatCurrency(totalAmout)}
                 </p>
                 <p>
-                  <span className="font-semibold">TIỀN KHÁCH TRẢ:</span>
+                  <span className="font-semibold">TIỀN KHÁCH TRẢ: </span>
                   {formatCurrency(totalAmout)}
                 </p>
                 <p className="text-xs text-gray-500">
