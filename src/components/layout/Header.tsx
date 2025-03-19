@@ -18,41 +18,45 @@ import RemainderComponent from "@/components/remainder/RemainderComponent";
 import { getCurrentDate } from "@/utils/helpers/getCurrentDate";
 import { reset } from "@/redux/notificationSlice";
 import Navbar from "./navbar/NavBar";
+
 const Header: React.FC = () => {
-  const isLogin = typeof window !== "undefined" && document.cookie.includes("access_token");
   const dispatch = useDispatch();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isLogin, setIsLogin] = useState<boolean | null>(null); // null initially
+
   const { user } = useSelector((state: RootState) => state.user);
+  const notificationCount = useSelector((state: RootState) => state.notifications.count);
+  const totalItems = useSelector((state: RootState) => state.cart.totalItems);
+
+  const currentDate = getCurrentDate();
+  const [menuItems] = useState<{ [key: string]: string }>(menuItemsData.menuItems1);
+  const [typeOfNotification, setTypeOfNotification] = useState<"new" | "reminder">("new");
+
   useNotifications();
   useCart();
-  const notificationCount = useSelector(
-    (state: RootState) => state.notifications.count
-  );
-  const currentDate = getCurrentDate();
-  const [menuItems] = useState<{ [key: string]: string }>(
-    menuItemsData.menuItems1
-  );
-  const totalItems = useSelector((state: RootState) => state.cart.totalItems);
-  const [typeOfNotification, setTypeOfNotification] = useState<
-    "new" | "reminder"
-  >("new");
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+
+
+  useEffect(() => {
+    setIsLogin(document.cookie.includes("authToken"));
+  }, []);
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const toggleNotification = () => {
     dispatch(reset());
-    setIsNotificationOpen(!isNotificationOpen);
+    setIsNotificationOpen((prev) => !prev);
   };
+
   useEffect(() => {
     const fetchUser = async () => {
-      if (!user) {
+      if (!user && isLogin) {
         const token = localStorage.getItem("access_token");
         if (token) {
           try {
             const userInfo = await fetchUserInfo(token);
-            console.log(userInfo);
-            dispatch(setUser(userInfo));
+            if (userInfo) {
+              dispatch(setUser(userInfo));
+            }
           } catch (error) {
             console.error("Error fetching user info:", error);
           }
@@ -60,13 +64,17 @@ const Header: React.FC = () => {
       }
     };
     fetchUser();
-  }, [dispatch, user]);
+  }, [dispatch, user, isLogin]);
+
   return (
     <header className="sticky top-0 z-50 bg-white">
-      {/* Sidebar Notification Drawer */}
-      <Drawer anchor="right" open={isNotificationOpen} onClose={toggleNotification}>
+      {/* Notification Drawer */}
+      <Drawer
+        anchor="right"
+        open={isNotificationOpen}
+        onClose={toggleNotification}
+      >
         <div className="w-[300px] lg:w-[500px] min-h-full h-auto bg-white p-6">
-          {/* Header */}
           <div className="bg-primary flex justify-between items-center p-4 rounded-t-lg sticky top-0 z-30">
             <div>
               <h2 className="text-lg font-semibold text-white">
@@ -83,13 +91,13 @@ const Header: React.FC = () => {
               <Close fontSize="large" />
             </button>
           </div>
-          {/* Tabs */}
+
           <div className="w-full flex">
             <div
               onClick={() => setTypeOfNotification("new")}
               className={`w-1/2 py-2 text-center cursor-pointer transition-colors ${
                 typeOfNotification === "new"
-                  ? " text-black font-semibold border border-b-4 border-primary"
+                  ? "text-black font-semibold border border-b-4 border-primary"
                   : "bg-white hover:bg-primary-light border text-gray-800"
               }`}
             >
@@ -99,30 +107,29 @@ const Header: React.FC = () => {
               onClick={() => setTypeOfNotification("reminder")}
               className={`w-1/2 py-2 text-center cursor-pointer transition-colors ${
                 typeOfNotification === "reminder"
-                  ? " text-black font-semibold border border-b-4 border-primary"
+                  ? "text-black font-semibold border border-b-4 border-primary"
                   : "bg-white hover:bg-primary-light border text-gray-800"
               }`}
             >
               Sản phẩm nhắc nhở
             </div>
           </div>
-          {/* Nội dung */}
+
           {typeOfNotification === "new" && <NotificationsComponent />}
           {typeOfNotification === "reminder" && (
             <RemainderComponent currentDate={currentDate} user={user} />
           )}
         </div>
       </Drawer>
-      {/* Top Header */}
+
       <div className="hidden lg:flex items-center justify-between bg-primary text-white px-6 text-xsm">
         <p>{user?.address ?? "99 Tô Hiến Thành - DN"}</p>
         <div className="flex items-center space-x-4">Tiếng Việt</div>
       </div>
-      {/* Desktop Navbar */}
+
       <Navbar user={user} isLogin={isLogin} />
-      {/* Mobile Navbar */}
+
       <div className="lg:hidden flex items-center justify-between p-4 shadow-md">
-        {/* Menu Icon */}
         <FaBars
           className="text-gray-600 text-xl cursor-pointer"
           onClick={toggleSidebar}
@@ -132,7 +139,7 @@ const Header: React.FC = () => {
         </h1>
         <div className="flex items-center space-x-4">
           <Link href="#" onClick={toggleNotification}>
-            <Badge badgeContent={2} color="error">
+            <Badge badgeContent={notificationCount} color="error">
               <Notifications className="text-gray-600 cursor-pointer hover:text-primary" />
             </Badge>
           </Link>
@@ -146,17 +153,18 @@ const Header: React.FC = () => {
           </Link>
         </div>
       </div>
-      {/* Sidebar */}
+
       <div
-        className={`fixed inset-0 bg-opacity-50 z-40 transition-opacity ${
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity ${
           isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={toggleSidebar}
-      ></div>
+      />
+
       <aside
         className={`fixed top-0 left-0 w-64 h-full bg-white shadow-lg z-50 transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform`}
+        } transition-transform duration-300 ease-in-out`}
       >
         <div className="p-4 flex justify-between items-center border-b">
           <span className="text-lg font-bold text-primary-light">Menu</span>
@@ -166,24 +174,28 @@ const Header: React.FC = () => {
         </div>
         <nav className="flex flex-col space-y-4 p-4 text-gray-700">
           {Object.entries(menuItems).map(([key, label]) => (
-            <Link key={key} href={`/${key.toLowerCase()}`}>
+            <Link
+              key={key}
+              href={`/${key.toLowerCase()}`}
+              onClick={toggleSidebar}
+            >
               <p className="hover:text-primary-light">{label}</p>
             </Link>
           ))}
-          <Link href="/account">
+          <Link href="/account" onClick={toggleSidebar}>
             <div className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <Image
-                  src={user?.avatar || defaultAvatar} // Fallback to default if avatar is null
-                  width={40} // Set the width to 40px
-                  height={40} // Set the height to 40px
-                  alt="avatar user"
-                  className="object-cover" // Ensures the image covers the circle without distortion
+                  src={user?.avatar || defaultAvatar}
+                  width={40}
+                  height={40}
+                  alt="User avatar"
+                  className="object-cover"
                 />
               </div>
               <div>
                 <p className="text-gray-800 font-semibold text-lg">
-                  {user?.username || "Customer"} {/* Display the user's name */}
+                  {user?.username || "Customer"}
                 </p>
               </div>
             </div>
@@ -193,4 +205,5 @@ const Header: React.FC = () => {
     </header>
   );
 };
+
 export default Header;

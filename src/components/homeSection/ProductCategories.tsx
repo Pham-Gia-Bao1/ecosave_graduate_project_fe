@@ -4,18 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import ClassNames from "classnames";
 import { motion } from "framer-motion";
 import {
-  ShoppingCart,
-  Utensils,
-  Fish,
-  Egg,
-  Apple,
-  Snowflake,
-  Wrench,
-  Droplets,
-  Wheat,
-  Package,
-  Milk,
-  Box,
+
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -26,22 +15,7 @@ interface ProductCategoriesProps {
   setLoading: (loading: boolean) => void;
 }
 
-const getCategoryIcon = (categoryName: string) => {
-  const icons: Record<string, JSX.Element> = {
-    "Tất cả": <ShoppingCart className="w-6 h-6" />,
-    Thịt: <Utensils className="w-6 h-6" />,
-    "Thủy sản": <Fish className="w-6 h-6" />,
-    Trứng: <Egg className="w-6 h-6" />,
-    "Trái Cây": <Apple className="w-6 h-6" />,
-    "Thực Phẩm Đông Lạnh": <Snowflake className="w-6 h-6" />,
-    "Thực Phẩm Sơ Chế": <Wrench className="w-6 h-6" />,
-    "Dầu Ăn, Gia vị": <Droplets className="w-6 h-6" />,
-    "Gạo, Mì, Bún, Đậu": <Wheat className="w-6 h-6" />,
-    "Thực Phẩm khô": <Package className="w-6 h-6" />,
-    "Chế Phẩm Từ Sữa": <Milk className="w-6 h-6" />,
-  };
-  return icons[categoryName] || <Box className="w-6 h-6" />;
-};
+
 
 const ProductCategories: React.FC<ProductCategoriesProps> = ({
   categories,
@@ -161,7 +135,6 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
                 whileHover="hover"
                 whileTap="tap"
               >
-                {getCategoryIcon(name)}
                 <p className="font-medium text-sm text-center">{name}</p>
               </motion.div>
             ))}
