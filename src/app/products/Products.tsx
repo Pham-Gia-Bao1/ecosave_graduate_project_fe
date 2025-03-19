@@ -11,11 +11,13 @@ type ProductListingProps = {
   listProducts: Product[];
   loadingProps: boolean;
   listCategories: Category[];
+  IS_BANNER?: boolean;
 };
 export default function ProductListing({
   listProducts,
   loadingProps,
   listCategories,
+  IS_BANNER = true,
 }: ProductListingProps) {
   const [products, setProducts] = useState<Product[]>(listProducts);
   const [categories] = useState<Category[]>(listCategories);
@@ -31,21 +33,23 @@ export default function ProductListing({
 
   return (
     <div className="container mx-auto py-8 mw-[100%]">
-      <div className="w-full h-[350px] relative">
-        {banners.map((image, index) => (
-          <Image
-            key={index}
-            src={image}
-            alt={`Banner Image ${index + 1}`}
-            layout="fill"
-            objectFit="cover"
-            className={`rounded absolute transition-opacity duration-1000 ${
-              index === currentIndex ? "opacity-100" : "opacity-0"
-            }`}
-            onError={(e) => (e.currentTarget.src = "/fallback.jpg")}
-          />
-        ))}
-      </div>
+      {IS_BANNER && (
+        <div className="w-full h-[350px] relative">
+          {banners.map((image, index) => (
+            <Image
+              key={index}
+              src={image}
+              alt={`Banner Image ${index + 1}`}
+              layout="fill"
+              objectFit="cover"
+              className={`rounded absolute transition-opacity duration-1000 ${
+                index === currentIndex ? "opacity-100" : "opacity-0"
+              }`}
+              onError={(e) => (e.currentTarget.src = "/fallback.jpg")}
+            />
+          ))}
+        </div>
+      )}
       {/* Bố cục chính */}
       <div className="flex flex-col lg:flex-row gap-8 mt-8">
         {/* Sidebar bộ lọc */}

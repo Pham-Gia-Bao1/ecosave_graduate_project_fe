@@ -60,6 +60,7 @@ const Login = ({ csrf }: LoginProps) => {
       localStorage.setItem("refresh_token", refresh_token);
       dispatch(setUser(user));
       document.cookie = `authToken=${access_token}; path=/; secure`;
+      sessionStorage.setItem("user", JSON.stringify(user));
       router.push("/"); // Redirect to homepage
     } else {
       setErrorMessage("Dữ liệu không hợp lệ, vui lòng thử lại.");

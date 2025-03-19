@@ -1,15 +1,15 @@
-import React from 'react';
-import type { DeliveryAddressProps } from '@/types';
-import { MapPin } from 'lucide-react';
-import calculateDistance from '@/utils/calculateDistance';
-import { useUserLocation } from '@/hooks/useUserLocation';
+import React from "react";
+import type { DeliveryAddressProps } from "@/types";
+import { MapPin } from "lucide-react";
+import calculateDistance from "@/utils/calculateDistance";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
-export const DeliveryAddress: React.FC<DeliveryAddressProps> = ({ 
-  storeAddress, 
-  userAddress, 
+export const DeliveryAddress: React.FC<DeliveryAddressProps> = ({
+  storeAddress,
+  userAddress,
   storeLatitude,
   storeLongitude,
-  onChangeAddress 
+  onChangeAddress,
 }) => {
   const userLocation = useUserLocation();
   return (
@@ -18,16 +18,21 @@ export const DeliveryAddress: React.FC<DeliveryAddressProps> = ({
         <div>
           <h2 className="text-lg font-medium mb-1">Địa chỉ cửa hàng</h2>
           <p className="text-gray-600">{storeAddress}</p>
-          <p className="text-gray-400 text-sm">Khoảng cách tới nhà bạn: 
+          <p className="text-gray-400 text-sm">
+            Khoảng cách tới nhà bạn:
             {userLocation
-              ? ` ${calculateDistance(
-                  [
-                    storeLatitude,
-                    storeLongitude,
-                  ],
-                  userLocation
-                )} km`
-              : "Không có thông tin vị trí"}</p>
+              ? (() => {
+                  const distance = calculateDistance(
+                    [storeLatitude, storeLongitude],
+                    userLocation
+                  );
+
+                  return distance < 1
+                    ? ` ${(distance * 1000).toFixed(0)}m`
+                    : ` ${distance.toFixed(2)} km`;
+                })()
+              : "Không có vị trí"}
+          </p>
         </div>
         <div>
           <h2 className="text-lg font-medium mb-1 flex items-center gap-2">
@@ -35,7 +40,7 @@ export const DeliveryAddress: React.FC<DeliveryAddressProps> = ({
             Địa chỉ của bạn
           </h2>
           <p className="text-gray-600">{userAddress}</p>
-          <button 
+          <button
             onClick={onChangeAddress}
             className="text-teal-500 text-sm hover:text-teal-600"
           >

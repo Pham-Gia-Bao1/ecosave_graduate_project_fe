@@ -50,7 +50,7 @@ export default async function StoreDetailPage({ params }: Props) {
 
   return (
     <Suspense fallback={<Loading />}>
-      <div className="flex justify-center items-center px-10">
+      <div className="flex justify-center items-center bg-green-400">
         {storeDetail ? (
           <StorePage store={storeDetail} products={products} categories={categories} />
         ) : (

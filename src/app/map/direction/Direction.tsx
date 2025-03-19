@@ -143,13 +143,13 @@ const Direction = ({ origin, destination }: DirectionProps) => {
     }
   }, [route, origin, destination]);
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <Link href="/">
         <span className="absolute top-4 left-5 bg-primary p-2 rounded z-50 cursor-pointer hover:bg-primary-light text-white transition-transform transform hover:scale-110">
           Trở về trang chủ
         </span>
       </Link>
-      <div id="map" className="w-full h-[600px]"></div>
+      <div id="map" className="w-full h-full"></div>
     </div>
   );
 };
