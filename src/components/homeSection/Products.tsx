@@ -265,7 +265,7 @@ export default function Products({
       className="relative rounded-lg shadow-soft bg-white pb-3 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
     >
       {product.discount_percent > 0 && (
-        <span className="absolute top-1 left-1 bg-orange-500 text-white text-[10px] font-bold px-1 py-0.5 rounded">
+        <span className="absolute top-1 left-1 bg-orange-500 text-white text-[15px] font-bold px-1 py-0.5 rounded">
           -{product.discount_percent}%
         </span>
       )}

@@ -39,7 +39,7 @@ import { formatMoney } from "@/utils";
 
 export interface NavbarProps {
   user: UserProfile | null;
-  isLogin: boolean;
+  isLogin: boolean | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
@@ -203,7 +203,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
               {icons[key]}
             </div>
           ))}
-        {isLogin ? ( // Sử dụng isLogin từ props để kiểm tra trạng thái đăng nhập
+        {isLogin === null ? <></> : isLogin ? (
           <div className="relative" ref={profileDropdownRef}>
             <div
               className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300"
