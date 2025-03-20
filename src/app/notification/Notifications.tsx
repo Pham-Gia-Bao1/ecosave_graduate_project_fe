@@ -12,7 +12,7 @@ import { formatCurrency } from "@/utils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-const realTimeServerURL = "http://localhost:4000";
+const realTimeServerURL = process.env.REALTIME_SERVER_KEY;
 import { motion } from "framer-motion";
 
 export default function NotificationsComponent() {

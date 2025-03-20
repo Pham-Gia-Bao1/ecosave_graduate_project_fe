@@ -30,7 +30,7 @@ import clsx from "clsx";
 
 const DEBOUNCE_DELAY = 500;
 const TOAST_DURATION = 3000;
-const realTimeServerURL = "https://ecosave-realtime.zeabur.app/";
+const realTimeServerURL = process.env.REALTIME_SERVER_KEY;
 interface ProductsProps {
   products: Product[];
   loading?: boolean;
