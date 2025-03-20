@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { increment, setCount } from "@/redux/notificationSlice";
 import useSocket from "@/hooks/useSocket";
-const realTimeServerURL = process.env.REALTIME_SERVER_KEY;
+const realTimeServerURL = "https://ecosave-realtime.zeabur.app";
 interface Notification {
   data: {
     product: {

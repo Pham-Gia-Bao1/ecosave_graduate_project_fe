@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 const realTimeServerURL =
-  process.env.REALTIME_SERVER_KEY || "http://localhost:4000";
+  process.env.REALTIME_SERVER_KEY || "https://ecosave-realtime.zeabur.app";
 export default function ScanProduct({
   barcode,
   setProductForAiGenerate,

@@ -12,7 +12,7 @@ import { formatCurrency } from "@/utils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-const realTimeServerURL = process.env.REALTIME_SERVER_KEY;
+const realTimeServerURL = "https://ecosave-realtime.zeabur.app/";
 import { motion } from "framer-motion";
 
 export default function NotificationsComponent() {
