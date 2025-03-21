@@ -13,8 +13,7 @@ import { storeSaveProductToReceiptNotification } from "@/api";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Link from "next/link";
 
-const serverUrl =
-  process.env.REALTIME_SERVER_KEY || "http://localhost:4000/api";
+const serverUrl = "https://ecosave-realtime.zeabur.app";
 
 export interface ProductForm {
   _id: string;

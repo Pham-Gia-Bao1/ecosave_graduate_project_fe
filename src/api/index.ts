@@ -412,8 +412,9 @@ export const addToCart = async (productId: number, quantity: number) => {
     // 🟢 Xóa cache để đảm bảo lấy dữ liệu mới
     clearCartCache();
     console.log("✅ Sản phẩm đã thêm vào giỏ hàng!");
+    console.log(response.data)
 
-    return { success: true, message: "Sản phẩm đã được thêm vào giỏ hàng! 🛒" };
+    return response.data;
   } catch (error: any) {
     console.error("❌ Lỗi khi thêm sản phẩm:", error.message);
     return { success: false, message: "Không thể thêm sản phẩm vào giỏ hàng." };

@@ -2,8 +2,8 @@ import Image from "next/image";
 import { FaTwitter, FaLinkedin } from "react-icons/fa";
 import founderGiaBao from "../../assets/images/users/bao.jpg";
 import founderBichQuyen from "../../assets/images/users/quyen.jpg";
-import founderThiHi from "../../assets/images/products/product3.png";
-import founderThuyNgan from "../../assets/images/products/product4.png";
+import founderThiHi from "../../assets/images/users/hi.jpg";
+import founderThuyNgan from "../../assets/images/users/ngan.jpg";
 
 const founders = [
   {

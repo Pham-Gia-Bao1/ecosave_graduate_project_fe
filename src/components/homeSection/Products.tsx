@@ -10,7 +10,7 @@ import {
 } from "react-icons/ai";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import {  setTotalItems } from "@/redux/cartSlice";
+import { getTotalItems, increment, setTotalItems } from "@/redux/cartSlice";
 import { useParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import fallbackImage from "../../assets/images/products/product1.png";
@@ -30,20 +30,18 @@ import clsx from "clsx";
 
 const DEBOUNCE_DELAY = 500;
 const TOAST_DURATION = 3000;
-const realTimeServerURL =  "https://ecosave-realtime.zeabur.app";
+const realTimeServerURL = "https://ecosave-realtime.zeabur.app";
 interface ProductsProps {
   products: Product[];
   loading?: boolean;
   className?: string;
   ITEMS_PER_PAGE?: number;
-
 }
 export default function Products({
   products: initialProducts,
   loading: initialLoading,
   className = "",
   ITEMS_PER_PAGE = 10,
-
 }: ProductsProps & { className?: string }) {
   const { handleAddToWishlist, handleRemove } = useWishlist();
   const wishlist = useSelector((state: RootState) => state.wishlist.items);
@@ -64,6 +62,7 @@ export default function Products({
   const [loadingProducts, setLoadingProducts] = useState(
     initialLoading ?? false
   );
+  const totalItems = useSelector(getTotalItems);
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
@@ -93,11 +92,11 @@ export default function Products({
   // Handle product creation
   const handleProductCreated = (notification: Notification) => {
     const newProduct = notification.data.product;
-      setListProducts((prevProducts) => {
-        const updatedProducts = [newProduct, ...prevProducts];
-        updateCache(updatedProducts, { page: 1 }); // Truyền filters vào
-        return updatedProducts;
-      });
+    setListProducts((prevProducts) => {
+      const updatedProducts = [newProduct, ...prevProducts];
+      updateCache(updatedProducts, { page: 1 }); // Truyền filters vào
+      return updatedProducts;
+    });
   };
 
   // Handle product update
@@ -128,7 +127,6 @@ export default function Products({
       }
     });
   }, [newNotifications, storeId]); // Đảm bảo dependencies đầy đủ
-
 
   const [toast, setToast] = useState<{
     message: string;
@@ -196,46 +194,64 @@ export default function Products({
           updated_at: new Date().toISOString(),
           product: product,
         });
-        setToast({ message: "Đã thêm vào danh sách yêu thích", keyword: "SUCCESS" });
+        setToast({
+          message: "Đã thêm vào danh sách yêu thích",
+          keyword: "SUCCESS",
+        });
       } catch (error) {
         console.error("Lỗi khi thêm vào danh sách yêu thích:", error);
-        setToast({ message: "Lỗi khi thêm vào danh sách yêu thích!", keyword: "ERROR" });
+        setToast({
+          message: "Lỗi khi thêm vào danh sách yêu thích!",
+          keyword: "ERROR",
+        });
       }
     } else {
       try {
         handleRemove(product.id);
-        setToast({ message: "Đã xóa khỏi danh sách yêu thích", keyword: "SUCCESS" });
+        setToast({
+          message: "Đã xóa khỏi danh sách yêu thích",
+          keyword: "SUCCESS",
+        });
       } catch (error) {
         console.error("Lỗi khi xóa khỏi danh sách yêu thích:", error);
-        setToast({ message: "Lỗi khi xóa khỏi danh sách yêu thích!", keyword: "ERROR" });
+        setToast({
+          message: "Lỗi khi xóa khỏi danh sách yêu thích!",
+          keyword: "ERROR",
+        });
       }
     }
   };
 
-  // Add to cart handler
   const handleAddToCart = useCallback(
     async (product: Product) => {
-      try {
-        setLoading((prev) => ({ ...prev, [product.id]: true }));
-        const result = await addToCart(product.id, 1);
-        if (!result.success) throw new Error(result.message);
+      setLoading((prev) => ({ ...prev, [product.id]: true }));
 
-        const cart = await getCart();
-        dispatch(setTotalItems(cart.data.total_items));
+      dispatch(increment());
+
+      try {
+        const result = await addToCart(product.id, 1);
+        if (!result) throw new Error(result.message);
+        dispatch(setTotalItems(result?.total_items ?? totalItems));
+
         setToast({ message: result.message, keyword: "SUCCESS" });
       } catch (error) {
         setToast({
           message:
-            error instanceof Error ? error.message : "Failed to add to cart",
+            error instanceof Error
+              ? error.message
+              : "Lỗi khi thêm vào giỏ hàng",
           keyword: "ERROR",
         });
+
+        dispatch(setTotalItems(totalItems));
       } finally {
         setLoading((prev) => ({ ...prev, [product.id]: false }));
         setTimeout(() => setToast(null), TOAST_DURATION);
       }
     },
-    [dispatch]
+    [dispatch, totalItems]
   );
+
   // Render loading skeleton
   const renderLoadingSkeleton = () => (
     <div className="animate-pulse grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
