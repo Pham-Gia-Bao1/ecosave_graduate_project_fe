@@ -192,9 +192,9 @@ const StorePage: React.FC<StorePageProps> = ({
           </motion.div>
         </section>
 
-        <section className="lg:px-28 px-3 bg-white -mt-7 flex justify-center items-center gap-4 flex-col">
+        <section className="lg:px-28 px-3 bg-white -mt-5 flex justify-center items-center gap-4 flex-col">
           <h1 className="text-2xl font-bold">
-            Khoảng cách với vị trí của bạn là
+            Khoảng cách từ cửa hàng với vị trí của bạn là
             {userLocation
               ? (() => {
                   const distance = calculateDistance(

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { getUserOrders } from "@/api";
+import api from "@/api";
 import type { OrderData } from "@/types";
 import { formatMoney } from "@/utils";
 import { useRouter } from "next/navigation";
@@ -24,7 +24,7 @@ export default function OrderHistory() {
     const fetchOrders = async () => {
       try {
         setIsLoading(true);
-        const response = await getUserOrders();
+        const response = await api.auth.getOrders();
 
         if (response && response.status === "success" && response.data) {
           const flattenedOrders: OrderData[] = [];

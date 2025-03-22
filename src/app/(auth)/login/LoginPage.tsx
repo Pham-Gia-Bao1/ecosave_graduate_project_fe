@@ -7,24 +7,23 @@ import loginImage from "../../../assets/images/auth/loginImage.png";
 import Image from "next/image";
 import bgIcon from "../../../assets/images/auth/bg-circle.png";
 import "./login.css";
-import { FormData, LoginProps } from "@/types";
-import { checkEmail, getAddressFromCoordinates, logIn, register } from "@/api";
+import { FormData } from "@/types";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userSlice";
 import { signIn } from "next-auth/react";
+import api from '@/api';
 import { loginErrors } from "../../../errorsCustome/loginErrors";
 import { auth, googleProvider } from "@/lib/firebaseConfig";
 import { signInWithPopup } from "firebase/auth";
 import { AiOutlineArrowLeft } from "react-icons/ai";
-const Login = ({ csrf }: LoginProps) => {
+const Login = () => {
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [csrfToken] = useState<string>(csrf);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -39,7 +38,7 @@ const Login = ({ csrf }: LoginProps) => {
       setLoading(true);
       setErrorMessage(null); // Reset previous errors
       try {
-        const data = await logIn(email, password, csrfToken);
+        const data = await  api.auth.login(email, password);
         storeUserData(data);
       } catch (error: any) {
         const errorCode: keyof typeof loginErrors.errors =
@@ -78,10 +77,10 @@ const Login = ({ csrf }: LoginProps) => {
         return;
       }
       const generatedPassword = user.uid.slice(0, 10); // Lấy 10 ký tự đầu từ UID
-      const checkResponse = await checkEmail(user.email);
+      const checkResponse = await api.auth.checkEmail(user.email);
 
       if (checkResponse) {
-        const data = await logIn(user.email, generatedPassword, csrfToken);
+        const data = await api.auth.login(user.email, generatedPassword);
         storeUserData(data);
       } else {
         console.log("Email chưa tồn tại, tiến hành đăng ký...");
@@ -96,7 +95,7 @@ const Login = ({ csrf }: LoginProps) => {
           return;
         }
 
-        const address = await getAddressFromCoordinates(latitude, longitude);
+        const address = await api.geolocation.getAddressFromCoords(latitude, longitude);
 
         const formData: FormData = {
           name: user.displayName || "Người dùng Google",
@@ -110,10 +109,10 @@ const Login = ({ csrf }: LoginProps) => {
           role_id: 2,
         };
 
-        const res = await register(formData);
+        const res = await api.auth.register(formData);
         console.log(res);
         if (res?.data?.user) {
-          const data = await logIn(user.email, generatedPassword, csrfToken);
+          const data = await api.auth.login(user.email, generatedPassword);
           storeUserData(data);
         } else {
           setErrorMessage("Đăng ký thất bại, vui lòng thử lại.");

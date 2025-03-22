@@ -1,4 +1,4 @@
-import { getStoreById } from '@/api';
+import api from '@/api';
 import { Store } from '@/types';
 import Image from 'next/image';
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -14,7 +14,7 @@ export default function CheckoutStoreInfo({ storeId }: CheckoutStoreInfoProps) {
   const fetchStoreInfo = useCallback(async () => {
     try {
       setError(null);
-      const response = await getStoreById(storeId);
+      const response = await api.stores.getById(storeId);
       setStore(response);
     } catch (err) {
       setError((err as Error).message);
@@ -42,7 +42,6 @@ export default function CheckoutStoreInfo({ storeId }: CheckoutStoreInfoProps) {
         <div className="flex-1">
           <h2 className="text-lg font-semibold">{store.store_name}</h2>
           <p className="text-gray-700"><strong>Địa chỉ:</strong> {store.address}</p>
-          <p className="text-gray-700"><strong>Trạng thái:</strong> {store.status}</p>
           <p className="text-gray-700"><strong>Giờ hoạt động:</strong> {store.opening_hours || "Not available"}</p>
         </div>
       </div>

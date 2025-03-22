@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { getCategories, getProducts } from "@/api";
+import api from "@/api";
 import { Category, Product } from "@/types";
 import Loading from "../loading";
 import ProductListing from "./Products";
@@ -9,8 +9,8 @@ export default async function Page() {
   let categories: Category[] | null = null;
   let loading = true;
   try {
-    products = await getProducts({page});
-    categories = await getCategories();
+    products = await api.products.getList({page});
+    categories = await api.categories.getList();
     loading = false;
   } catch (error) {
     console.error("Failed to fetch data:", error);

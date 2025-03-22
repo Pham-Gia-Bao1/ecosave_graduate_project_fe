@@ -32,10 +32,11 @@ import useCart from "@/hooks/useCart";
 import RemainderComponent from "@/components/remainder/RemainderComponent";
 import { getCurrentDate } from "@/utils/helpers/getCurrentDate";
 import { reset } from "@/redux/notificationSlice";
-import { logout } from "@/api";
+import api from "@/api";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWishlist } from "@/hooks/useWishlist";
 import { formatMoney } from "@/utils";
+import ActiveMenu from "./ActiveMenu";
 
 export interface NavbarProps {
   user: UserProfile | null;
@@ -56,10 +57,10 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   const [menuItems] = useState<{ [key: string]: string }>(
     menuItemsData.menuItems1
   );
+  const [active, setActive] = useState<number>(0);
   const [menuIcons] = useState<{ [key: string]: string }>(
     menuItemsData.menuItems2
   );
-  const [active, setActive] = useState<number>(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState<boolean>(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] =
@@ -124,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
 
   const handleLogout = async () => {
     setLogoutLoading(true);
-    await logout(dispatch);
+    await api.auth.logout(dispatch);
     setLogoutLoading(false);
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     router.push("/login");
@@ -174,24 +175,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
         />
       </div>
       <div className="flex-grow flex justify-center relative">
-        <ul className="flex space-x-8 text-gray-600 relative">
-          {Object.entries(menuItems).map(([key, label], index) => (
-            <li
-              key={key}
-              ref={(el) => {
-                menuRefs.current[index] = el;
-              }}
-              onClick={() => setActive(index)}
-              className={`cursor-pointer transition-colors duration-300 text-lg ${
-                active === index ? "text-primary" : "hover:text-primary-light"
-              }`}
-            >
-              <Link href={`/${key.toLowerCase()}`} passHref>
-                <p>{label}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <ActiveMenu menuItems={menuItems} />
       </div>
       <div className="flex items-center space-x-6">
         {isLogin &&

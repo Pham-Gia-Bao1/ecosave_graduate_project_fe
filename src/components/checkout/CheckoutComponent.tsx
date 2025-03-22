@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatMoney } from "@/utils";
 import { useRouter } from "next/navigation";
-import { makeNewPayment } from "@/api";
+import api from "@/api";
 import CheckoutFormGetInfo from "./CheckoutFormGetInfo";
 import OrderCard from "./OrderCard";
 import { PaymentItem } from "@/types";
@@ -76,7 +76,9 @@ const CheckoutComponent = ({ products }: { products: PaymentItem[] }) => {
     )}; path=/; secure`;
 
     try {
-      const URLPayment = await makeNewPayment(Number(totalPrice.toFixed(0)));
+      const URLPayment = await api.payment.create(
+        Number(totalPrice.toFixed(0))
+      );
       setLoading(false);
       if (URLPayment) {
         router.push(URLPayment);
@@ -131,7 +133,7 @@ const CheckoutComponent = ({ products }: { products: PaymentItem[] }) => {
             )}
           </div>
           {/* Price Summary */}
-          <div className="bg-gray-200 shadow-soft p-4 rounded-lg mt-4">
+          <div className="border p-4 rounded-lg mt-4">
             <div className="flex justify-between text-gray-700">
               <p className="font-semibold">Tạm Tính:</p>
               <p className="font-semibold">{formatMoney(totalPrice)}</p>
@@ -149,9 +151,11 @@ const CheckoutComponent = ({ products }: { products: PaymentItem[] }) => {
               onClick={handleBuyClick}
               disabled={totalItems === 0 || loading}
               className={`px-6 py-2 rounded-lg text-white transition-all duration-300 ease-in-out
-    ${totalItems > 0 && !loading
-      ? "bg-primary hover:bg-primary-light active:bg-primary-dark"
-      : "bg-gray-300 cursor-not-allowed opacity-70"}
+    ${
+      totalItems > 0 && !loading
+        ? "bg-primary hover:bg-primary-light active:bg-primary-dark"
+        : "bg-gray-300 cursor-not-allowed opacity-70"
+    }
     ${loading ? "cursor-wait bg-primary opacity-80" : ""}`}
             >
               {!loading ? "Mua Ngay" : "Đang xử lí..."}

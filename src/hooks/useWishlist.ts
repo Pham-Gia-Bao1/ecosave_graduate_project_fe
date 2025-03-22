@@ -8,13 +8,7 @@ import {
     setWishlistProductIds,
 } from "@/redux/wishlistSlice";
 import { WishList, Product } from "@/types";
-import {
-    addToWishlist as addAPI,
-    addToCart,
-    getCart,
-    removeFromWishlist as removeAPI,
-    getWishlistProductIds,
-} from "@/api";
+import api from "@/api";
 import { setTotalItems } from "@/redux/cartSlice";
 
 export const useWishlist = () => {
@@ -33,7 +27,7 @@ export const useWishlist = () => {
     useEffect(() => {
         const fetchWishlistIds = async () => {
             try {
-                const productIds = await getWishlistProductIds();
+                const productIds = await api.wishlist.getProductIds();
                 dispatch(setWishlistProductIds(productIds));
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách product_id:", error);
@@ -49,48 +43,67 @@ export const useWishlist = () => {
 
     const handleAddToWishlist = async (item: WishList) => {
         setLoadingState((prev) => ({ ...prev, [item.product_id]: true }));
-        dispatch(addToWishlist(item));
         try {
-            await addAPI(item.product_id);
+            await api.wishlist.add(item.product_id); // Gọi API trước
+            dispatch(addToWishlist(item)); // Chỉ dispatch nếu API thành công
             showToast("Đã thêm vào danh sách yêu thích", "SUCCESS");
         } catch (error) {
             console.error("Lỗi khi thêm sản phẩm:", error);
             showToast("Lỗi khi thêm sản phẩm", "ERROR");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, [item.product_id]: false }));
         }
-        setLoadingState((prev) => ({ ...prev, [item.product_id]: false }));
     };
 
     const handleRemove = async (id: number) => {
         setLoadingState((prev) => ({ ...prev, [id]: true }));
-        dispatch(removeFromWishlist(id));
         try {
-            await removeAPI(id);
+            await api.wishlist.remove(id); // Gọi API trước
+            dispatch(removeFromWishlist(id)); // Chỉ dispatch nếu API thành công
             showToast("Đã xóa khỏi danh sách yêu thích", "SUCCESS");
         } catch (error) {
             console.error("Lỗi khi xóa sản phẩm:", error);
             showToast("Lỗi khi xóa sản phẩm", "ERROR");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, [id]: false }));
         }
-        setLoadingState((prev) => ({ ...prev, [id]: false }));
     };
 
     const handleAddToCart = useCallback(async (product: Product) => {
-        setLoadingState((prev) => ({ ...prev, [product.id]: true }));
+        setLoadingState(prev => ({ ...prev, [product.id]: true }));
+
         try {
-            const result = await addToCart(product.id, 1);
+            const result = await api.cart.add(product.id, 1);
             if (result.success) {
-                const cart = await getCart();
-                dispatch(setTotalItems(cart.data.total_items));
-                showToast("Đã thêm vào giỏ hàng", "SUCCESS");
+                showToast(`Đã thêm ${product.name} vào giỏ hàng`, "SUCCESS");
+                return true; // Đánh dấu thành công
             }
         } catch (error) {
             console.error("Lỗi khi thêm vào giỏ hàng:", error);
-            showToast("Lỗi khi thêm vào giỏ hàng", "ERROR");
+            showToast(`Lỗi khi thêm ${product.name} vào giỏ hàng`, "ERROR");
+        } finally {
+            setLoadingState(prev => ({ ...prev, [product.id]: false }));
         }
-        setLoadingState((prev) => ({ ...prev, [product.id]: false }));
-    }, [dispatch]);
+        return false; // Đánh dấu thất bại
+    }, []);
 
     const handleAddAllToCart = async () => {
-        await Promise.all(wishlist.map(item => handleAddToCart(item.product)));
+        setLoadingState(prev =>
+            wishlist.reduce((acc, item) => ({ ...acc, [item.product.id]: true }), prev)
+        );
+
+        const results = await Promise.all(
+            wishlist.map(item => handleAddToCart(item.product))
+        );
+
+        setLoadingState(prev =>
+            wishlist.reduce((acc, item) => ({ ...acc, [item.product.id]: false }), prev)
+        );
+
+        if (results.some(success => success)) {
+            const cart = await api.cart.get();
+            dispatch(setTotalItems(cart.data.total_items));
+        }
     };
 
 

@@ -66,23 +66,6 @@ const CheckoutFormGetInfo: React.FC = () => {
           />
         </div>
 
-        {/* Phone */}
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
-            Số Điện Thoại
-          </label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded-lg"
-            placeholder="Số điện thoại của bạn"
-            required
-            disabled={!isEditing}
-          />
-        </div>
-
         {/* Payment Method */}
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="paymentMethod">

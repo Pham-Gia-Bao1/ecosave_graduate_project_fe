@@ -57,12 +57,20 @@ export function StoreInfo({ store }: StoreInfoProps) {
           <div className="flex items-center space-x-2">
             <Car className="w-5 h-5 shrink-0" />
             <span className="text-[16px]">
-              {userLocation
-                ? `${calculateDistance(
+            {userLocation
+              ? (() => {
+                  const distance = calculateDistance(
                     [store.latitude, store.longitude],
                     userLocation
-                  )} km`
-                : "Không có thông tin vị trí"}
+                  );
+
+                  if (isNaN(distance)) return "Lỗi tính toán khoảng cách";
+
+                  return distance < 1
+                    ? `${(distance * 1000).toFixed(0)}m `
+                    : `${distance.toFixed(2)} km `;
+                })()
+              : "Đang xác định khoảng cách"}
             </span>
           </div>
         </div>

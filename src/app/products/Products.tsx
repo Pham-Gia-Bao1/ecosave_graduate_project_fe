@@ -4,9 +4,9 @@ import Products from "@/components/homeSection/Products";
 import { useEffect, useState } from "react";
 import FilterSidebar from "@/components/filer/FilterSidebar";
 import { Category, Product } from "@/types";
-import banner01 from "../../assets/images/banner/banner01.jpg";
+import banner01 from "../../assets/images/banner/banner01.png";
 import banner02 from "../../assets/images/banner/banner02.png";
-import banner03 from "../../assets/images/banner/banner03.jpeg";
+import banner03 from "../../assets/images/banner/banner03.png";
 type ProductListingProps = {
   listProducts: Product[];
   loadingProps: boolean;

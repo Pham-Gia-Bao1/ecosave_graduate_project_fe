@@ -1,5 +1,5 @@
 import React from "react";
-import { getProductDetail } from "@/api";
+import api from "@/api";
 import { Product } from "@/types";
 import Loading from "../../loading";
 import ProductDetailPage from "./ProductDetail";
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const storeDetail = await getProductDetail(params.id);
+  const storeDetail = await api.products.getDetail(params.id);
   return generateMeta(
     storeDetail?.name || "Product Detail",
     "To product detail information"
@@ -23,7 +23,7 @@ export default async function Page({ params }: Props) {
   let loading = true;
 
   try {
-    const product: Product | null = await getProductDetail(params.id);
+    const product: Product | null = await api.products.getDetail(params.id);
     loading = false;
 
     if (product) {

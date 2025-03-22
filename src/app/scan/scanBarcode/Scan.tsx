@@ -8,7 +8,7 @@ import ScanAIGenerate from "./ScanAIGenerate";
 import { ProductScan } from "@/types";
 import LOGO from "../../../assets/images/logo/LOGO.png";
 import { AiOutlineClose } from "react-icons/ai";
-import { storeSaveProductToReceiptNotification } from "@/api";
+import api from "@/api";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import ToastNotification from "@/components/toast/ToastNotification";
@@ -16,10 +16,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDateTime } from "@/utils";
 import {
-  convertToVietnamTime,
-  removeAMPM,
+  removeTimeFromDate,
 } from "@/utils/helpers/convertToVietnamTime";
-import { FaBoxOpen, FaCheckCircle, FaEye, FaRedo } from "react-icons/fa";
+import { FaCheckCircle, FaEye, FaRedo } from "react-icons/fa";
 
 // Định nghĩa types
 interface Toast {
@@ -155,7 +154,7 @@ const BarcodeScanner = () => {
 
       setState((prev) => ({ ...prev, loading: true }));
       try {
-        const response = await storeSaveProductToReceiptNotification(
+        const response = await api.products.saveToReceipt(
           user.id,
           state.product._id,
           state.product.expiryDate,
@@ -225,7 +224,7 @@ const BarcodeScanner = () => {
           <p className="text-gray-700 text-lg flex items-center gap-2">
             <span className="font-semibold">Hạn sử dụng:</span>
             <span className="ml-1 text-gray-900">
-              {convertToVietnamTime(formatDateTime(product.expiryDate))}
+              {removeTimeFromDate(formatDateTime(product.expiryDate))}
             </span>
           </p>
         </div>
@@ -274,8 +273,8 @@ const BarcodeScanner = () => {
       ) : (
         <div
           className={`relative grid ${
-            !state.product ? "grid-cols-1" : "grid-cols-2"
-          } gap-0 p-4 text-white max-w-full w-auto mx-auto`}
+            !state.product ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+          } gap-0 p-1 text-white max-w-full w-auto mx-auto`}
         >
           {state.toast && (
             <ToastNotification

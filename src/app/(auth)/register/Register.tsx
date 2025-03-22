@@ -7,14 +7,7 @@ import "./register.css";
 import bgIcon from "../../../assets/images/auth/bg-circle.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  checkEmail,
-  getAddressFromCoordinates,
-  getCSRF,
-  getLatLng,
-  logIn,
-  register,
-} from "@/api";
+import api from "@/api";
 import ToastNotification from "@/components/toast/ToastNotification";
 import AddressInput from "@/components/input/AddressInput";
 import { FiEye, FiEyeOff } from "react-icons/fi"; // Import the eye icons
@@ -88,14 +81,14 @@ const Register: React.FC = () => {
     setLoading(true);
     if (validate()) {
       setLoading(true);
-      const location = await getLatLng(formData.address);
+      const location = await api.geolocation.getLatLng(formData.address);
       if (location && location.lat && location.lng) {
-        formData.latitude = location.lat;
-        formData.longitude = location.lng;
+        formData.latitude = location.lat.toString();
+        formData.longitude = location.lng.toString();
         formData.avatar =
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQct7GVODYZLmiBWG1WRsQ9ekyJLTLT-o2CMQ&s";
         try {
-          const response = await register(formData);
+          const response = await api.auth.register(formData);
           console.log(response);
           // Check for response validity
           if (response) {
@@ -141,11 +134,10 @@ const Register: React.FC = () => {
         return;
       }
       const generatedPassword = user.uid.slice(0, 10); // Lấy 10 ký tự đầu từ UID
-      const checkResponse = await checkEmail(user.email);
+      const checkResponse = await api.auth.checkEmail(user.email);
 
       if (checkResponse) {
-        const csrfToken = await getCSRF();
-        const data = await logIn(user.email, generatedPassword, csrfToken);
+        const data = await api.auth.login(user.email, generatedPassword);
         storeUserData(data);
       } else {
         const locationData = localStorage.getItem("user_location");
@@ -158,7 +150,7 @@ const Register: React.FC = () => {
           return;
         }
 
-        const address = await getAddressFromCoordinates(latitude, longitude);
+        const address = await api.geolocation.getAddressFromCoords(latitude, longitude);
 
         const formData: FormData = {
           name: user.displayName || "Người dùng Google",
@@ -172,10 +164,9 @@ const Register: React.FC = () => {
           role_id: 2,
         };
 
-        const res = await register(formData);
+        const res = await api.auth.register(formData);
         if (res?.data?.user) {
-          const csrfToken = await getCSRF();
-          const data = await logIn(user.email, generatedPassword, csrfToken);
+          const data = await api.auth.login(user.email, generatedPassword);
           storeUserData(data);
         } else {
           setErrorMessage("Đăng ký thất bại, vui lòng thử lại.");

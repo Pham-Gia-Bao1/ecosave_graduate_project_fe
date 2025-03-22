@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { WishList } from "@/types";
-import { getWishlist } from "@/api";
+import api from "@/api";
 
 interface WishlistState {
     items: WishList[];
@@ -16,7 +16,7 @@ const initialState: WishlistState = {
 
 // Fetch danh sách wishlist
 export const fetchWishlist = createAsyncThunk("wishlist/fetchWishlist", async () => {
-    const response = await getWishlist();
+    const response = await api.wishlist.get();
     return response.data;
 });
 

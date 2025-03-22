@@ -2,19 +2,19 @@
 
 import { formatDateTime, getUrlUpdateUserImg } from "@/utils";
 import Image from "next/image";
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion } from "framer-motion";
 import LOGO from "../../../assets/images/logo/LOGO.png";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import ToastNotification from "@/components/toast/ToastNotification";
-import { storeSaveProductToReceiptNotification } from "@/api";
+import api from "@/api";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Link from "next/link";
+import { removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 
-const serverUrl =
-  process.env.REALTIME_SERVER_KEY || "http://localhost:4000/api";
+const serverUrl = "https://ecosave-realtime.zeabur.app/api";
 
 export interface ProductForm {
   _id: string;
@@ -22,6 +22,7 @@ export interface ProductForm {
   expiryDate: string;
   productImages: FileList;
 }
+
 const ProductDisplay = memo(
   ({ product, onReset }: { product: ProductForm; onReset: () => void }) => {
     return (
@@ -41,7 +42,7 @@ const ProductDisplay = memo(
           <p className="text-gray-600 text-lg">
             Hạn sử dụng:
             <span className="font-medium text-gray-800">
-              {formatDateTime(product.expiryDate)}
+              {removeTimeFromDate(formatDateTime(product.expiryDate))}
             </span>
           </p>
         </div>
@@ -66,7 +67,7 @@ const ProductDisplay = memo(
           >
             Thêm sản phẩm mới
           </button>
-          <Link href='/expiry-items-reminder'>
+          <Link href="/expiry-items-reminder">
             <button className="mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-all duration-300 shadow-md">
               Xem các sản phẩm đã lưu
             </button>
@@ -78,6 +79,7 @@ const ProductDisplay = memo(
 );
 
 ProductDisplay.displayName = "ProductDisplay";
+
 const ProductInputForm = memo(
   ({
     onSubmit,
@@ -229,6 +231,7 @@ const ProductInputForm = memo(
     );
   }
 );
+
 ProductInputForm.displayName = "ProductInputForm";
 
 export default function ProductFormComponent() {
@@ -241,6 +244,24 @@ export default function ProductFormComponent() {
     message: string;
     keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
   } | null>(null);
+
+  const [availableDays, setAvailableDays] = useState<number[]>([]);
+
+  // Tính availableDays dựa trên submittedData khi modal mở
+  useEffect(() => {
+    if (isModalOpen && submittedData?.expiryDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Chuẩn hóa ngày hiện tại về 00:00
+      const expiry = new Date(submittedData.expiryDate);
+      expiry.setHours(0, 0, 0, 0); // Chuẩn hóa ngày hết hạn về 00:00
+      const diffTime = expiry.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Lọc danh sách số ngày nhắc nhở hợp lý (tối đa 5 ngày)
+      const reminderDays = [1, 2, 3, 4, 5].filter((day) => day <= diffDays);
+      setAvailableDays(reminderDays);
+    }
+  }, [isModalOpen, submittedData]);
 
   const onSubmit = useCallback((data: ProductForm) => {
     setSubmittedData(data);
@@ -282,11 +303,11 @@ export default function ProductFormComponent() {
           }),
         });
 
-        if (!response.ok) throw new Error("Failed to create product");
+        if (!response.ok) throw new Error("Tạo sản phẩm thất bại");
         const newProduct = await response.json();
 
         setProduct(newProduct.data);
-        const isStore = await storeSaveProductToReceiptNotification(
+        const isStore = await api.products.saveToReceipt(
           user.id,
           newProduct.data._id,
           newProduct.data.expiryDate,
@@ -343,7 +364,6 @@ export default function ProductFormComponent() {
                 <AiOutlineClose className="text-xl" />
               </button>
 
-
               <div className="flex flex-col items-center gap-6">
                 <Image
                   src={LOGO.src}
@@ -355,16 +375,23 @@ export default function ProductFormComponent() {
                 <h2 className="text-xl font-semibold text-gray-800 text-center">
                   Nhận thông báo trước ngày hết hạn bao nhiêu ngày?
                 </h2>
-                <div className="flex flex-wrap justify-center gap-3">
-                  {[1, 2, 3, 4, 5].map((day) => (
-                    <button
-                      key={day}
-                      onClick={() => handleSaveReminder(day)}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-light transition-all duration-300 shadow-md"
-                    >
-                      {day} ngày
-                    </button>
-                  ))}
+                <div className="flex space-x-2">
+                  {availableDays.length > 0 ? (
+                    [1, 2, 3, 4, 5].map((day) => (
+                      <button
+                        key={day}
+                        onClick={() => handleSaveReminder(day)}
+                        className={`px-3 py-2 rounded text-white transition bg-primary hover:bg-primary-light disabled:bg-gray-300 disabled:cursor-not-allowed`}
+                        disabled={!availableDays.includes(day)} // Vô hiệu hóa nếu ngày không nằm trong availableDays
+                      >
+                        {day} ngày
+                      </button>
+                    ))
+                  ) : (
+                    <span className="text-red-500">
+                      Ngày hết hạn không hợp lệ hoặc đã qua!
+                    </span>
+                  )}
                 </div>
               </div>
             </motion.div>

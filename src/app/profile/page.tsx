@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/userProfile/header";
 import ProfileCard from "@/components/userProfile/profile-card";
 import UserInfoSection from "@/components/userProfile/user-info-section";
-import { fetchUser, logout } from "@/api";
+import api from "@/api";
 import { UserProfile } from "@/types";
 import Loading from "../loading";
 import Link from "next/link";
@@ -24,7 +24,7 @@ export default function ProfilePage() {
     const loadUserData = async () => {
       try {
         setLoading(true);
-        const data = await fetchUser();
+        const data = await api.auth.fetchUser();
         console.log("user profile: ", data);
         if (!data) {
           throw new Error("Không thể tải thông tin của bạn");
@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     setLogoutLoading(true); // 🆕 Hiển thị loading khi logout bắt đầu
-    await logout(dispatch);
+    await api.auth.logout(dispatch);
     setLogoutLoading(false); // 🆕 Dừng loading sau khi logout xong
     router.push("/login");
   };

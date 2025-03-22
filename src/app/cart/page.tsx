@@ -1,10 +1,10 @@
 "use client"
 
-import { getCart } from "@/api";
+import api from "@/api";
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ShoppingCartIcon as CartIcon, MapPin, Package, Loader2 } from "lucide-react"
+import { ShoppingCartIcon as CartIcon, MapPin, Package } from "lucide-react"
 import { useDispatch } from "react-redux";
 import { setTotalItems } from "@/redux/cartSlice";
 import Loading from "../loading";
@@ -57,16 +57,16 @@ const ShoppingCart: React.FC = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const response = await getCart()
+        const response = await api.cart.get()
 
         if (response.status === "success") {
           setCartData(response.data)
           dispatch(setTotalItems(response.data.length));
         } else {
-          setError(response.message || "Failed to fetch cart data")
+          setError(response.message || "Lỗi khi tải giỏ hàng")
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred")
+        setError(err instanceof Error ? err.message : "Lỗi khi tải giỏ hàng")
       } finally {
         setLoading(false)
       }
@@ -96,7 +96,7 @@ const ShoppingCart: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto p-4 text-center">
         <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-          <p>{error}</p>
+          <p>Giỏ hàng trống</p>
           <Link
             href="/products"
             className="mt-4 inline-block bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors"

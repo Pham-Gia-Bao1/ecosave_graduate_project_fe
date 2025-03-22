@@ -1,6 +1,6 @@
 import { ProductScan, ScanProductInfoProps } from "@/types";
-import { formatCurrency, formatDateTime, formatMoney } from "@/utils";
-import { removeAMPM } from "@/utils/helpers/convertToVietnamTime";
+import {  formatDateTime, formatMoney } from "@/utils";
+import {  removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
@@ -69,9 +69,7 @@ export default function ScanProduct({
           alt={product.title}
           className="w-full h-60 object-cover rounded-md"
         />
-        <span className="absolute top-2 left-2 bg-red-500 text-white px-3 py-1 rounded-md text-sm">
-          Giảm {product.discountPercentage}%
-        </span>
+    
       </div>
       {/* Thông tin sản phẩm */}
       <h1 className="text-2xl font-bold text-gray-900 mt-4">{product.title}</h1>
@@ -96,11 +94,11 @@ export default function ScanProduct({
         <DetailItem label="Bảo hành" value={product.warrantyInformation} />
         <DetailItem
           label="Ngày sản xuất"
-          value={removeAMPM(formatDateTime(product.manufacturingDate))}
+          value={removeTimeFromDate(formatDateTime(product.manufacturingDate))}
         />
         <DetailItem
           label="Ngày hết hạn"
-          value={removeAMPM(formatDateTime(product.expiryDate))}
+          value={removeTimeFromDate(formatDateTime(product.expiryDate))}
         />
       </div>
     </div>

@@ -9,7 +9,7 @@ import { RootState } from "@/redux/store";
 import Image from "next/image";
 import { Badge, Drawer } from "@mui/material";
 import { Favorite, Notifications, ShoppingCart, Close } from "@mui/icons-material";
-import { fetchUserInfo } from "@/api";
+import api  from "@/api";
 import { setUser } from "@/redux/userSlice";
 import NotificationsComponent from "@/app/notification/Notifications";
 import useNotifications from "@/hooks/useNotifications";
@@ -53,7 +53,7 @@ const Header: React.FC = () => {
         const token = localStorage.getItem("access_token");
         if (token) {
           try {
-            const userInfo = await fetchUserInfo(token);
+            const userInfo = await api.auth.fetchUser();
             if (userInfo) {
               dispatch(setUser(userInfo));
             }
