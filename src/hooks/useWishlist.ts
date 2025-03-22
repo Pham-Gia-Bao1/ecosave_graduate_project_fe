@@ -49,28 +49,30 @@ export const useWishlist = () => {
 
     const handleAddToWishlist = async (item: WishList) => {
         setLoadingState((prev) => ({ ...prev, [item.product_id]: true }));
-        dispatch(addToWishlist(item));
         try {
-            await addAPI(item.product_id);
+            await addAPI(item.product_id); // Gọi API trước
+            dispatch(addToWishlist(item)); // Chỉ dispatch nếu API thành công
             showToast("Đã thêm vào danh sách yêu thích", "SUCCESS");
         } catch (error) {
             console.error("Lỗi khi thêm sản phẩm:", error);
             showToast("Lỗi khi thêm sản phẩm", "ERROR");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, [item.product_id]: false }));
         }
-        setLoadingState((prev) => ({ ...prev, [item.product_id]: false }));
     };
 
     const handleRemove = async (id: number) => {
         setLoadingState((prev) => ({ ...prev, [id]: true }));
-        dispatch(removeFromWishlist(id));
         try {
-            await removeAPI(id);
+            await removeAPI(id); // Gọi API trước
+            dispatch(removeFromWishlist(id)); // Chỉ dispatch nếu API thành công
             showToast("Đã xóa khỏi danh sách yêu thích", "SUCCESS");
         } catch (error) {
             console.error("Lỗi khi xóa sản phẩm:", error);
             showToast("Lỗi khi xóa sản phẩm", "ERROR");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, [id]: false }));
         }
-        setLoadingState((prev) => ({ ...prev, [id]: false }));
     };
 
     const handleAddToCart = useCallback(async (product: Product) => {
@@ -85,14 +87,14 @@ export const useWishlist = () => {
         } catch (error) {
             console.error("Lỗi khi thêm vào giỏ hàng:", error);
             showToast("Lỗi khi thêm vào giỏ hàng", "ERROR");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, [product.id]: false }));
         }
-        setLoadingState((prev) => ({ ...prev, [product.id]: false }));
     }, [dispatch]);
 
     const handleAddAllToCart = async () => {
         await Promise.all(wishlist.map(item => handleAddToCart(item.product)));
     };
-
 
     return {
         wishlist,

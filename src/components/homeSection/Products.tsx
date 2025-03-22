@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import fallbackImage from "../../assets/images/products/product1.png";
 import { Notification, Product, ProductFilters } from "@/types";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { getProducts, addToCart, getCart } from "@/api";
+import { getProducts, addToCart } from "@/api";
 import ToastNotification from "../toast/ToastNotification";
 import calculateDistance from "@/utils/calculateDistance";
 import { formatMoney } from "@/utils";

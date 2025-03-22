@@ -1,5 +1,5 @@
 "use client";
-import type { PaymentItem, ProductInfoProps } from "@/types";
+import type { PaymentItem, Product, ProductInfoProps } from "@/types";
 import { formatMoney } from "@/utils";
 import { Heart, Star, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -11,18 +11,31 @@ import { addPaymentItem, clearPaymentItems } from "@/redux/paymentSlice";
 import { useRouter } from "next/navigation";
 import { RootState } from "@/redux/store";
 import { increment } from "@/redux/cartSlice";
+import { useWishlist } from "@/hooks/useWishlist";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+
 export function ProductInfo({ product }: ProductInfoProps) {
   const { user } = useSelector((state: RootState) => state.user);
+  const wishlist = useSelector((state: RootState) => state.wishlist.items);
   const dispatch = useDispatch();
-  const [quantity, setQuantity] = useState(1);
-  const [isWishlist, setIsWishlist] = useState(false);
   const router = useRouter();
+  const { handleAddToWishlist, handleRemove } = useWishlist();
+
+  const [quantity, setQuantity] = useState(1);
   const [toast, setToast] = useState<{
     message: string;
     keyword: "SUCCESS" | "ERROR" | "WARNING" | "INFO";
   } | null>(null);
   const TOAST_DURATION = 3000;
-  
+
+  // Đồng bộ isWishlist với wishlist từ Redux
+  useEffect(() => {
+    const isInWishlist = wishlist.some(
+      (item) => item.product_id === product.id
+    );
+    setIsWishlist(isInWishlist);
+  }, [wishlist, product.id]);
+
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("vi-VN", {
       year: "numeric",
@@ -48,46 +61,40 @@ export function ProductInfo({ product }: ProductInfoProps) {
         message: "Sản phẩm đang hết hàng, vui lòng thêm sản phẩm này sau!",
         keyword: "ERROR",
       });
-      setTimeout(() => setToast(null), 3000);
+      setTimeout(() => setToast(null), TOAST_DURATION);
       return;
     }
     try {
       const result = await addToCart(product.id, quantity);
       if (result.success) {
-        setToast({
-          message: result.message,
-          keyword: "SUCCESS",
-        });
+        setToast({ message: result.message, keyword: "SUCCESS" });
         dispatch(increment());
       } else {
-        setToast({
-          message: result.message, 
-          keyword: "ERROR",
-        });
+        setToast({ message: result.message, keyword: "ERROR" });
       }
-      
-      setTimeout(() => setToast(null), 3000);
+      setTimeout(() => setToast(null), TOAST_DURATION);
     } catch (error: unknown) {
       let errorMessage = "Đã xảy ra lỗi khi thêm vào giỏ hàng.";
       if (error instanceof Error) {
         errorMessage = error.message;
       }
       setToast({ message: errorMessage, keyword: "ERROR" });
-      setTimeout(() => setToast(null), 3000);
+      setTimeout(() => setToast(null), TOAST_DURATION);
     }
   };
 
   const handlyPayOneProduct = () => {
     if (!user) {
-    setToast({
-      message: "Vui lòng đăng nhập trước khi mua sản phẩm!",
-      keyword: "WARNING",
-    });
-    return;
+      setToast({
+        message: "Vui lòng đăng nhập trước khi mua sản phẩm!",
+        keyword: "WARNING",
+      });
+      setTimeout(() => setToast(null), TOAST_DURATION);
+      return;
     }
     if (product.stock_quantity <= 0) {
       setToast({
-        message: `Hiện tại sản phẩm này đang hết hàng. Hãy xóa sản phẩm này hoặc chờ sản phẩm có lại hàng để tiếp tục.`,
+        message: "Hiện tại sản phẩm này đang hết hàng!",
         keyword: "ERROR",
       });
       setTimeout(() => setToast(null), TOAST_DURATION);
@@ -101,15 +108,52 @@ export function ProductInfo({ product }: ProductInfoProps) {
       picture: product.images[0].image_url,
       storeId: product.store_id,
     };
-
     dispatch(clearPaymentItems());
     dispatch(addPaymentItem(paymentItem));
     setToast({
       message: "Sản phẩm đã được thêm vào thanh toán!",
       keyword: "SUCCESS",
     });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), TOAST_DURATION);
     router.push("/checkout");
+  };
+
+  const [isWishlist, setIsWishlist] = useState(false);
+  const toggleFavorite = async () => {
+    if (!user) {
+      setToast({
+        message: "Vui lòng đăng nhập để thêm vào danh sách yêu thích!",
+        keyword: "WARNING",
+      });
+      setTimeout(() => setToast(null), TOAST_DURATION);
+      return;
+    }
+    setIsWishlist(!isWishlist);
+    const isInWishlist = wishlist.some(
+      (item) => item.product_id === product.id
+    );
+
+    try {
+      if (!isInWishlist) {
+        await handleAddToWishlist({
+          id: product.id,
+          user_id: user.id,
+          product_id: product.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          product: product,
+        });
+      } else {
+        await handleRemove(product.id);
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý danh sách yêu thích:", error);
+      setToast({
+        message: "Lỗi khi cập nhật danh sách yêu thích!",
+        keyword: "ERROR",
+      });
+      setTimeout(() => setToast(null), TOAST_DURATION);
+    }
   };
 
   return (
@@ -121,17 +165,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
             -{product.discount_percent}%
           </span>
         </div>
-        <div className="absolute">
-          {toast &&
-            createPortal(
-              <ToastNotification
-                message={toast.message}
-                keyword={toast.keyword}
-              />,
-              document.body
-            )}
-        </div>
+        {toast &&
+          createPortal(
+            <ToastNotification
+              message={toast.message}
+              keyword={toast.keyword}
+            />,
+            document.body
+          )}
       </div>
+
       <div className="flex items-center gap-4 flex-wrap">
         <div className="text-lg font-medium">{product.rating}</div>
         <div className="flex gap-0.5">
@@ -201,15 +244,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       <div className="flex gap-4 mt-6 flex-wrap">
         <button
-          onClick={() => setIsWishlist(!isWishlist)}
-          className="h-12 w-12 border rounded flex items-center justify-center hover:bg-gray-50"
+          onClick={toggleFavorite}
+          className="h-12 w-12 border rounded flex items-center justify-center hover:bg-gray-50 transition-transform duration-200 active:scale-90"
         >
-          <Heart
-            className={`w-5 h-5 ${
-              isWishlist ? "fill-red-500 text-red-500" : ""
-            }`}
-          />
+          {isWishlist ? (
+            <AiFillHeart size={18} className="text-red-500" />
+          ) : (
+            <AiOutlineHeart size={18} className="text-gray-500" />
+          )}
         </button>
+
         <button
           onClick={handleAddToCart}
           className="flex items-center justify-center h-12 border rounded hover:bg-gray-50 w-32"

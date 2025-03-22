@@ -274,8 +274,8 @@ const BarcodeScanner = () => {
       ) : (
         <div
           className={`relative grid ${
-            !state.product ? "grid-cols-1" : "grid-cols-2"
-          } gap-0 p-4 text-white max-w-full w-auto mx-auto`}
+            !state.product ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+          } gap-0 p-1 text-white max-w-full w-auto mx-auto`}
         >
           {state.toast && (
             <ToastNotification

@@ -10,3 +10,9 @@ export const removeAMPM = (dateTime: string | null): string => {
     if (!dateTime) return "Chưa cập nhật"; // Nếu null hoặc undefined, trả về thông báo mặc định
     return dateTime.replace(/\s*AM|\s*PM/g, "").trim(); // Xóa "AM" hoặc "PM" nếu có
 };
+
+
+export const removeTimeFromDate = (dateTime: string | null): string => {
+    if (!dateTime) return "Chưa cập nhật"; // Trả về mặc định nếu null hoặc undefined
+    return dateTime.replace(/^\d{1,2}:\d{2}\s?(AM|PM)?\s*/, "").trim(); // Xóa giờ và AM/PM nếu có
+};
