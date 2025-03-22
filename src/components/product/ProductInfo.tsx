@@ -5,7 +5,7 @@ import { Heart, Star, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 import ToastNotification from "../toast/ToastNotification";
 import { createPortal } from "react-dom";
-import { addToCart } from "@/api";
+import api from "@/api";
 import { useDispatch, useSelector } from "react-redux";
 import { addPaymentItem, clearPaymentItems } from "@/redux/paymentSlice";
 import { useRouter } from "next/navigation";
@@ -65,7 +65,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       return;
     }
     try {
-      const result = await addToCart(product.id, quantity);
+      const result = await api.cart.add(product.id, quantity);
       if (result.success) {
         setToast({ message: result.message, keyword: "SUCCESS" });
         dispatch(increment());

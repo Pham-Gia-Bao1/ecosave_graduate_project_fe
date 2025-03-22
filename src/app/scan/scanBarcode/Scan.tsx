@@ -8,7 +8,7 @@ import ScanAIGenerate from "./ScanAIGenerate";
 import { ProductScan } from "@/types";
 import LOGO from "../../../assets/images/logo/LOGO.png";
 import { AiOutlineClose } from "react-icons/ai";
-import { storeSaveProductToReceiptNotification } from "@/api";
+import api from "@/api";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import ToastNotification from "@/components/toast/ToastNotification";
@@ -154,7 +154,7 @@ const BarcodeScanner = () => {
 
       setState((prev) => ({ ...prev, loading: true }));
       try {
-        const response = await storeSaveProductToReceiptNotification(
+        const response = await api.products.saveToReceipt(
           user.id,
           state.product._id,
           state.product.expiryDate,

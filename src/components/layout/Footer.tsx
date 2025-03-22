@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
             <h3 className="font-semibold text-gray-700 mb-3">Tài khoản</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
-                <Link href="/favorites">Yêu thích</Link>
+                <Link href="/wishlist">Yêu thích</Link>
               </li>
               <li>
                 <Link href="/cart">Giỏ hàng</Link>
@@ -50,9 +50,7 @@ const Footer: React.FC = () => {
               <li>
                 <Link href="/order-history">Thông tin đơn hàng</Link>
               </li>
-              <li>
-                <Link href="/delivery">Chi tiết giao hàng</Link>
-              </li>
+
             </ul>
           </div>
           <div>
@@ -62,14 +60,12 @@ const Footer: React.FC = () => {
                 <Link href="/about">Về chúng tôi</Link>
               </li>
               <li>
-                <Link href="/contact">Liên hệ</Link>
+                <Link href="/about">Liên hệ</Link>
               </li>
               <li>
                 <Link href="/products">Giá hot</Link>
               </li>
-              <li>
-                <Link href="/products">Khuyến mãi</Link>
-              </li>
+
               <li>
                 <Link href="/products">Sản phẩm mới</Link>
               </li>
@@ -85,9 +81,6 @@ const Footer: React.FC = () => {
                 <Link href="/refund">Đền bù</Link>
               </li>
               <li>
-                <Link href="/shipping">Giao hàng</Link>
-              </li>
-              <li>
                 <Link href="/faq">Q&A</Link>
               </li>
               <li>
@@ -98,7 +91,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="mt-8 border-t border-gray-300 pt-4">
           <div className="flex flex-wrap justify-between items-center">
-            <p className="text-sm text-gray-500">© 2022, All rights reserved</p>
+            <p className="text-sm text-gray-500">© 2025 EcoSave</p>
             <div className="flex space-x-4">
               <Image
                 width={150}

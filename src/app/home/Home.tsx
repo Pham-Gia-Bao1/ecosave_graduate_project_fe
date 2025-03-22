@@ -20,6 +20,7 @@ import BenefitsSection from "@/components/homeSection/BenefitsSection";
 import { Category, Product } from "@/types";
 import HomeMapSecsion from "@/components/map/Map";
 import Link from "next/link";
+import SliderHeaderMobile from "@/components/banner/SliderHeaderMobile";
 type HomeType = {
   listCategories: Category[];
   listProducts: Product[];
@@ -61,8 +62,8 @@ export default function Home({
   }, []);
 
   return (
-    <div className="lg:px-20 px-10 h-full w-full overflow-hidden">
-      <section className="relative px-4 flex flex-col md:flex-row items-center justify-between h-[600px]">
+    <div className="lg:px-20 px-2 h-full w-full overflow-hidden">
+      <section className="relative lg:px-4 flex flex-col md:flex-row items-center justify-between lg:h-[600px]">
         {/* Background Icons */}
         <Image
           src={bgIcon.src}
@@ -85,16 +86,17 @@ export default function Home({
           quality={50}
         />
         {/* Nội dung bên trái */}
-        <div className="max-w-xl">
-          <h1 className="text-6xl font-bold leading-tight text-gray-900">
+        <div className="max-w-xl mt-2">
+          <h1 className="lg:text-6xl hidden lg:block mt-2 font-bold leading-tight text-gray-900">
             Thu Thập <span className="text-primary">Giảm Giá Tốt</span> Gần Địa
             Điểm Của Bạn
           </h1>
-          <p className="mt-4 text-gray-600">
+          <p className="lg:mt-4 hidden lg:block my-3 text-gray-600">
             Khám phá và thu thập những ưu đãi tuyệt vời ngay gần bạn để tiết
             kiệm hơn mỗi ngày!
           </p>
-          <div className="mt-6 flex space-x-4">
+          <SliderHeaderMobile />
+          <div className="mt-6 space-x-4 hidden lg:flex">
             <Link href="/products">
               <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light">
                 Xem sản phẩm
@@ -106,7 +108,7 @@ export default function Home({
               </button>
             </Link>
           </div>
-          <div className="flex p-3 my-4 space-x-6">
+          <div className="hidden lg:flex p-3 my-4 space-x-6">
             <div className="flex justify-center items-center gap-2">
               <Image
                 src={IconSafe.src}
@@ -146,7 +148,7 @@ export default function Home({
           </div>
         </div>
         {/* Ảnh Slider */}
-        <div className="relative w-1/2 h-full overflow-hidden">
+        <div className="relative w-1/2 h-full overflow-hidden hidden lg:block">
           <motion.div
             key={index}
             initial={{ opacity: 0, x: 50 }}

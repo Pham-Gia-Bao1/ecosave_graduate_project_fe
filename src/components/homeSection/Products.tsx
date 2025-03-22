@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import fallbackImage from "../../assets/images/products/product1.png";
 import { Notification, Product, ProductFilters } from "@/types";
 import { useUserLocation } from "@/hooks/useUserLocation";
-import { getProducts, addToCart } from "@/api";
+import api from "@/api";
 import ToastNotification from "../toast/ToastNotification";
 import calculateDistance from "@/utils/calculateDistance";
 import { formatMoney } from "@/utils";
@@ -157,7 +157,7 @@ export default function Products({
       if (debounceTimeout) clearTimeout(debounceTimeout);
       const timeout = setTimeout(async () => {
         try {
-          const searchResults = await getProducts({
+          const searchResults = await api.products.getList({
             name: query.trim(),
             store_id: storeId,
           });
@@ -229,7 +229,7 @@ export default function Products({
       dispatch(increment());
 
       try {
-        const result = await addToCart(product.id, 1);
+        const result = await api.cart.add(product.id, 1);
         if (!result) throw new Error(result.message);
         dispatch(setTotalItems(result?.total_items ?? totalItems));
 
@@ -278,15 +278,15 @@ export default function Products({
       exit={{ opacity: 0, x: -10, scale: 0.98 }}
       transition={{ type: "spring", stiffness: 80, damping: 16 }}
       key={product.id}
-      className="relative rounded-lg shadow-soft bg-white pb-3 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
+      className="relative rounded-lg shadow-soft bg-white pb-2 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
     >
       {product.discount_percent > 0 && (
-        <span className="absolute top-1 left-1 bg-orange-500 text-white text-[15px] font-bold px-1 py-0.5 rounded">
+        <span className="absolute top-1 left-1 bg-orange-500 text-white text-xs sm:text-sm font-bold px-1 py-0.5 rounded">
           -{product.discount_percent}%
         </span>
       )}
       <Link href={`/products/${product.id}`} className="block">
-        <div className="w-full h-[200px] overflow-hidden bg-gray-200 rounded-t-lg">
+        <div className="w-full h-[140px] sm:h-[180px] overflow-hidden bg-gray-200 rounded-t-lg">
           <Image
             src={product.images[0]?.image_url || fallbackImage.src}
             alt={product.name}
@@ -299,12 +299,13 @@ export default function Products({
           />
         </div>
       </Link>
-      <div className="mt-3 px-3  space-y-1">
-        <div className="flex justify-between ">
-          <p className="text-xs max-w-[90px] text-gray-500 truncate">
+
+      <div className="mt-1 px-2 sm:px-3 space-y-1">
+        <div className="flex justify-between">
+          <p className="text-xs sm:text-sm max-w-[80px] text-gray-500 truncate">
             {product.category.name}
           </p>
-          <div className="text-gray-500 flex gap-2 items-center text-xs">
+          <div className="text-gray-500 flex gap-2 items-center text-xs sm:text-sm">
             <p className="truncate">
               {userLocation
                 ? (() => {
@@ -312,7 +313,6 @@ export default function Products({
                       [product.store.latitude, product.store.longitude],
                       userLocation
                     );
-
                     return distance < 1
                       ? `${(distance * 1000).toFixed(0)}m`
                       : `${distance.toFixed(2)} km`;
@@ -323,14 +323,16 @@ export default function Products({
             <p className="max-w-[50px] truncate">{product.store.store_name}</p>
           </div>
         </div>
+
         <Link href={`/products/${product.id}`} className="block">
-          <h3 className="text-[15px] font-semibold truncate hover:text-primary">
+          <h3 className="text-xs sm:text-sm font-semibold truncate hover:text-primary">
             {product.name}
           </h3>
         </Link>
+
         <div className="flex justify-between items-center">
           <div className="flex">
-            <p className="text-primary-light font-bold text-sm">
+            <p className="text-primary-light font-bold text-xs sm:text-sm">
               {formatMoney(Number(product.discounted_price), "VND")}
             </p>
             <p className="text-gray-500 font-bold line-through text-xs ml-1">
@@ -338,14 +340,15 @@ export default function Products({
             </p>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-sm">{product.rating}</span>
-            <AiFillStar className="text-yellow-400" size={16} />
+            <span className="text-xs sm:text-sm">{product.rating}</span>
+            <AiFillStar className="text-yellow-400" size={14} />
           </div>
         </div>
       </div>
-      <div className="flex justify-between mt-3 px-3">
+
+      <div className="flex justify-between mt-2 px-2 sm:px-3">
         <motion.button
-          className={`p-1.5 border rounded-full transition-all duration-300 ${
+          className={`p-1 border rounded-full transition-all duration-300 ${
             favoriteProductIds.includes(product.id)
               ? "bg-orange-500 text-white"
               : "bg-white text-red-500 hover:bg-red-500 hover:text-white"
@@ -358,25 +361,22 @@ export default function Products({
           onClick={() => toggleFavorite(product)}
         >
           {favoriteProductIds.includes(product.id) ? (
-            <AiFillHeart size={18} />
+            <AiFillHeart size={16} />
           ) : (
-            <AiOutlineHeart size={18} />
+            <AiOutlineHeart size={16} />
           )}
         </motion.button>
 
         <button
           onClick={() => handleAddToCart(product)}
-          className="p-1.5 w-[70%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
+          className="p-1 w-[70%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
         >
-          {loading[product.id] ? (
-            <SubLoading />
-          ) : (
-            <AiOutlineShoppingCart size={18} />
-          )}
+          {loading[product.id] ? <SubLoading /> : <AiOutlineShoppingCart size={16} />}
         </button>
       </div>
     </motion.div>
   );
+
 
   // Render pagination
   const renderPagination = () => (
@@ -415,8 +415,8 @@ export default function Products({
           <ToastNotification message={toast.message} keyword={toast.keyword} />,
           document.body
         )}
-      <div className="flex justify-between items-center py-4">
-        <h4 className="text-2xl font-bold">Sản Phẩm Bán Chạy</h4>
+      <div className="flex justify-between items-center pb-4">
+        <h4 className="lg:text-2xl  font-bold">Sản Phẩm Bán Chạy</h4>
         <div className="relative">
           <button
             onClick={() => setIsSearchVisible(!isSearchVisible)}

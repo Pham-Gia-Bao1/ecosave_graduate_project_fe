@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAccessToken } from "@/utils/helpers/getAccessToken";
 import { useRouter } from "next/navigation";
 import ExpiryItemsReminder from "./ExpiryItemsReminder";
 import { ProductScan } from "@/types";
 import { getProductsByIds } from "@/api/scan";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { getSaveProductOfUserId } from "@/api";
+import api from "@/api";
 import Loading from "../loading";
 import { AiOutlineInbox } from "react-icons/ai";
 
@@ -22,7 +21,7 @@ export default function ExpiryPage() {
     console.log(user?.id);
     if (user?.id) {
       setLoading(true);
-      getSaveProductOfUserId(user.id)
+      api.products.getSaved(user.id)
         .then((productIds) => {
           console.log("Saved product IDs:", productIds);
           return productIds ? getProductsByIds(productIds) : null;

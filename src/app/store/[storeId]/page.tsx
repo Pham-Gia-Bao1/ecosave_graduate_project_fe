@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import StorePage from "./Store";
 import Loading from "@/app/loading";
 import { Product, Store, Category } from "@/types";
-import { getCategories, getProducts, getStoreById } from "@/api";
+import api from "@/api";
 import { generateMetadata as generateMeta } from "@/utils";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props) {
   try {
-    const storeDetail = await getStoreById(Number(params.storeId));
+    const storeDetail = await api.stores.getById(Number(params.storeId));
     return generateMeta(
       storeDetail?.store_name || "Store",
       "To see all available nearing stores that contain experiential promotional information"
@@ -31,9 +31,9 @@ export default async function StoreDetailPage({ params }: Props) {
 
   try {
     const [storeData, productData, categoryData] = await Promise.all([
-      getStoreById(Number(storeId)),
-      getProducts({ store_id: Number(storeId) }),
-      getCategories(),
+      api.stores.getById(Number(storeId)),
+      api.products.getList({ store_id: Number(storeId) }),
+      api.categories.getList()
     ]);
 
     storeDetail = storeData;

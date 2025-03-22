@@ -11,7 +11,7 @@ import { Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Category, Product, ProductFilters } from "@/types";
-import { getProducts } from "@/api";
+import api from "@/api";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { getUserLocation } from "@/utils/helpers/getUserLocation";
 interface FilterSidebarProps {
@@ -102,7 +102,7 @@ export default function FilterSidebar({
             user_lng: userLocation[1], // Lấy giá trị từ mảng userLocation
           }),
       };
-      const filteredProducts = await getProducts(filters, {
+      const filteredProducts = await api.products.getList(filters, {
         signal: abortControllerRef.current.signal,
       });
       setProducts(filteredProducts);

@@ -1,5 +1,5 @@
 // api/index.ts
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { redirect } from 'next/navigation';
 import { AppDispatch } from '@/redux/store';
 import { setUser } from '@/redux/userSlice';
@@ -51,14 +51,23 @@ const handleError = (error: unknown, context: string): never => {
   throw new Error(`[${context}] ${message}`);
 };
 
-const fetchWithCache = async <T>(url: string, cacheKey: string, forceRefresh = false): Promise<T> => {
+// Data Fetching with Cache
+const fetchWithCache = async <T>(
+  url: string,
+  cacheKey: string,
+  forceRefresh: boolean = false, // Tham số thứ 3 là forceRefresh
+  options: AxiosRequestConfig = {} // Tham số thứ 4 là options
+): Promise<T> => {
   if (!forceRefresh) {
     const cachedData = cache.get<T>(cacheKey);
     if (cachedData) return cachedData;
   }
 
   try {
-    const { data } = await axios.get<{ data: T }>(url, { headers: { 'Cache-Control': 'no-store' } });
+    const { data } = await axios.get<{ data: T }>(url, {
+      headers: { 'Cache-Control': 'no-store' },
+      ...options, // Truyền options vào config của axios
+    });
     cache.set(cacheKey, data.data);
     return data.data;
   } catch (error) {
@@ -82,9 +91,31 @@ export const auth = {
   },
 
   logout: async (dispatch: AppDispatch): Promise<void> => {
-    await api.post('/logout');
-    dispatch(setUser(null));
-    document.cookie = 'authToken=; path=/; secure; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    const token = getToken();
+    try {
+      // Gửi yêu cầu logout với token trong header
+      await api.post('/logout', {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      // Xóa token và cập nhật state sau khi logout thành công
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      dispatch(setUser(null));
+      document.cookie = "authToken=; path=/; secure; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+
+      dispatch(setUser(null));
+      document.cookie = 'authToken=; path=/; secure; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    } catch (error) {
+      // Xử lý lỗi 401 hoặc các lỗi khác
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        console.warn('Token invalid or expired during logout. Proceeding with client-side cleanup.');
+        localStorage.removeItem('access_token'); // Xóa token dù server từ chối
+        dispatch(setUser(null));
+        document.cookie = 'authToken=; path=/; secure; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        return;
+      }
+      handleError(error, 'logout');
+    }
   },
 
   checkEmail: async (email: string): Promise<boolean> => {
@@ -152,21 +183,47 @@ export const geolocation = {
   },
 };
 
+
+
 // Product API
 export const products = {
-  getList: async (filters: ProductFilters): Promise<Product[]> => {
-    const params = new URLSearchParams();
+  getList: async (filters: ProductFilters, options?: RequestInit): Promise<Product[]> => {
+    try {
+      const params: any = { ...filters };
+      if (filters.category_id && filters.category_id.length > 0) {
+        params.category_id = filters.category_id.join(",");
+      }
+      if (filters.store_id) {
+        params.store_id = filters.store_id;
+      }
 
-    if (filters.category_id?.length) {
-      params.set("category_id", filters.category_id.join(","));
+      // Check if running on client-side
+      if (typeof window !== "undefined") {
+        const cacheKey = `products_${JSON.stringify(params)}`;
+        const cachedData = sessionStorage.getItem(cacheKey);
+        if (cachedData) {
+          return JSON.parse(cachedData);
+        }
+      }
+
+      const response = await axios.get(`${SERVER_URL}/products`, {
+        params,
+        headers: { "Cache-Control": "no-store" },
+        signal: options?.signal ?? undefined,
+      });
+
+      const productList = response.data.data as Product[];
+
+      // Store in cache only on client-side
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(`products_${JSON.stringify(params)}`, JSON.stringify(productList));
+      }
+
+      return productList;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
     }
-    if (filters.store_id) {
-      params.set("store_id", String(filters.store_id));
-    }
-
-    const result = await fetchWithCache<Product[]>(`${SERVER_URL}/products?${params}`, `products_${params}`);
-
-    return result ?? []; // Nếu result là null hoặc undefined, trả về []
   },
 
   getByStoreId: async (storeId: string | number): Promise<Product[]> => {
@@ -280,7 +337,7 @@ export const cart = {
 
   add: async (productId: number, quantity: number): Promise<any> => {
     const token = getToken();
-    if (!token) return { success: false, message: 'Please login' };
+    if (!token) return { success: false, message: 'Vui lòng đăng nhập' };
 
     const { data } = await api.post('/cart/add', { product_id: productId, quantity }, {
       headers: { Authorization: `Bearer ${token}` },
@@ -329,7 +386,7 @@ export const orders = {
 export const payment = {
   create: async (total: number): Promise<string> => {
     const token = getToken();
-    if (!token) throw new Error('Please login');
+    if (!token) throw new Error('Vui lòng đăng nhập');
 
     const { data } = await api.post<{ status: string; data: string }>('/payment', { total }, {
       headers: { Authorization: `Bearer ${token}` },

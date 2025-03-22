@@ -3,9 +3,7 @@ export type UserLogin = {
   name: string;
   email: string;
 };
-export type LoginProps = {
-  csrf: string;
-};
+
 export interface UserProfile {
   id: number; // ID của người dùng
   username: string; // Tên người dùng

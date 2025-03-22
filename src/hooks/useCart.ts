@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { getCart } from "@/api";
+import api from "@/api";
 import { setTotalItems } from "@/redux/cartSlice";
 const useCart = () => {
   const dispatch = useDispatch();
@@ -10,7 +10,7 @@ const useCart = () => {
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const response = await getCart();
+        const response = await api.cart.get();
         if (response.status === "success") {
           dispatch(setTotalItems(response.data.total_items || 0));
         } else {

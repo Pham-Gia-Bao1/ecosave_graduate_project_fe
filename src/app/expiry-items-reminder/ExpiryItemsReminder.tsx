@@ -8,7 +8,7 @@ import React, { useState } from "react";
 import dayjs from "dayjs";
 import CountdownTimer from "./CountdownTimer";
 import ToastNotification from "@/components/toast/ToastNotification";
-import { deleteSaveProductById } from "@/api";
+import api from "@/api";
 import { removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 
 const getDaysDifference = (expiryDate: string) => {
@@ -78,7 +78,7 @@ export default function ExpiryItemsReminder({
 
   const deleteProduct = async (productId: string) => {
     console.log(productId);
-    const isDeleted = await deleteSaveProductById(productId);
+    const isDeleted = await api.products.deleteSaved(productId);
     if (isDeleted) {
       setListProducts((prev) => prev.filter((p) => p._id !== productId));
       setToast({ message: `Đã xóa sản phẩm thành công `, keyword: "SUCCESS" });
@@ -257,11 +257,11 @@ export default function ExpiryItemsReminder({
                 getDaysDifference(selectedProduct.expiryDate)
               )}`}
             >
-              {formatDateTime(selectedProduct.expiryDate)}
+              {removeTimeFromDate(formatDateTime(selectedProduct.expiryDate))}
             </p>
             <p className="font-bold mt-2">Ngày lưu sản phẩm</p>
             <p className="text-gray-700">
-              {formatDateTime(selectedProduct.meta?.createdAt ?? "")}
+              {removeTimeFromDate(formatDateTime(selectedProduct.meta?.createdAt ?? ""))}
             </p>
             <CountdownTimer expiryDate={selectedProduct.expiryDate} />
           </motion.div>

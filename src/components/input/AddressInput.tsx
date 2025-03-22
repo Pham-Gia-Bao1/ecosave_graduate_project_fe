@@ -1,4 +1,4 @@
-import { getLocationSuggestions } from "@/api";
+import api from "@/api";
 import React, { useState, useCallback } from "react";
 import debounce from "lodash.debounce"; // using ok
 interface AddressInputProps {
@@ -11,7 +11,7 @@ const AddressInput: React.FC<AddressInputProps> = ({ setFormData }) => {
   const fetchSuggestions = useCallback(
     debounce(async (value: string) => {
       if (value.length >= 3) {
-        const result = await getLocationSuggestions(value);
+        const result = await api.geolocation.getSuggestions(value);
         setSuggestions(result);
       } else {
         setSuggestions([]);

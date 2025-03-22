@@ -9,9 +9,10 @@ import LOGO from "../../../assets/images/logo/LOGO.png";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import ToastNotification from "@/components/toast/ToastNotification";
-import { storeSaveProductToReceiptNotification } from "@/api";
+import api from "@/api";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Link from "next/link";
+import { removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 
 const serverUrl = "https://ecosave-realtime.zeabur.app/api";
 
@@ -41,7 +42,7 @@ const ProductDisplay = memo(
           <p className="text-gray-600 text-lg">
             Hạn sử dụng:
             <span className="font-medium text-gray-800">
-              {formatDateTime(product.expiryDate)}
+              {removeTimeFromDate(formatDateTime(product.expiryDate))}
             </span>
           </p>
         </div>
@@ -306,7 +307,7 @@ export default function ProductFormComponent() {
         const newProduct = await response.json();
 
         setProduct(newProduct.data);
-        const isStore = await storeSaveProductToReceiptNotification(
+        const isStore = await api.products.saveToReceipt(
           user.id,
           newProduct.data._id,
           newProduct.data.expiryDate,

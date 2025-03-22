@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import Home from "./Home";
-import { getCategories, getProducts } from "@/api";
+import api from "@/api";
 import { Category, Product } from "@/types";
 import Loading from "../loading";
 
@@ -8,8 +8,8 @@ const HomePage = async () => {
   try {
     const page = 1;
     const [products, categories]: [Product[], Category[]] = await Promise.all([
-      getProducts({ page }),
-      getCategories(),
+      api.products.getList({ page }),
+      api.categories.getList(),
     ]);
 
     return (

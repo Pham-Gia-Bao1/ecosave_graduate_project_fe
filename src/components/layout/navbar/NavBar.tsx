@@ -32,7 +32,7 @@ import useCart from "@/hooks/useCart";
 import RemainderComponent from "@/components/remainder/RemainderComponent";
 import { getCurrentDate } from "@/utils/helpers/getCurrentDate";
 import { reset } from "@/redux/notificationSlice";
-import { logout } from "@/api";
+import api from "@/api";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWishlist } from "@/hooks/useWishlist";
 import { formatMoney } from "@/utils";
@@ -125,7 +125,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
 
   const handleLogout = async () => {
     setLogoutLoading(true);
-    await logout(dispatch);
+    await api.auth.logout(dispatch);
     setLogoutLoading(false);
     document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     router.push("/login");

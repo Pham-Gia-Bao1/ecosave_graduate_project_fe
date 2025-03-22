@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { getCartDetail, updateCartItemQuantity, removeCartItem } from "@/api";
+import api from "@/api";
 import React, { useEffect, useState, useCallback } from "react";
 import { debounce } from "lodash";
 import type { CartProduct, PaymentItem } from "@/types";
@@ -37,7 +37,7 @@ const CartPage: React.FC = () => {
   const debouncedUpdateQuantity = debounce(
     async (storeId: number, productId: number, newQuantity: number) => {
       try {
-        await updateCartItemQuantity(storeId, productId, newQuantity);
+        await api.cart.updateQuantity(storeId, productId, newQuantity);
       } catch (error) {
         console.error("Failed to update quantity:", error);
         setCartItems((prevItems) =>
@@ -79,7 +79,7 @@ const CartPage: React.FC = () => {
         )
       );
       try {
-        await removeCartItem(storeId, productId);
+        await api.cart.remove(storeId, productId);
         setCartItems((prevItems) =>
           prevItems.filter((item) => item.product_id !== productId)
         );
@@ -105,7 +105,7 @@ const CartPage: React.FC = () => {
     }
     try {
       setLoading(true);
-      const cartData = await getCartDetail(storeId);
+      const cartData = await api.cart.getDetail(storeId);
       setCartData(cartData.data);
       const items = cartData.data?.store?.items ?? [];
       setCartItems(items);
@@ -131,30 +131,7 @@ const CartPage: React.FC = () => {
         (Number(item.original_price) * item.quantity - Number(item.subtotal)),
       0
     );
-  // const handlePayment = async () => {
-  //   const outOfStockItems = cartItems.filter(item => item.stock_quantity <= 0);
-  //   if (outOfStockItems.length > 0) {
-  //     setToast({
-  //       message: `${outOfStockItems.map(item => item.name).join(", ")} hiện tại đang hết hàng. Hãy xóa sản phẩm đó hoặc chờ sản phẩm có lại hàng để tiếp tục.`,
-  //       keyword: "ERROR",
-  //     });
-  //     setTimeout(() => setToast(null), TOAST_DURATION);
-  //     return;
-  //   }
-  //   cartItems.forEach((product) => {
-  //     const paymentProductItem: PaymentItem = {
-  //       id: product.product_id,
-  //       name: product.name,
-  //       price: product.discounted_price,
-  //       quantity: product.quantity,
-  //       picture: product.images[0].image_url,
-  //       storeId: storeId ?? 1,
-  //     };
-  //     dispatch(clearPaymentItems());
-  //     dispatch(addPaymentItem(paymentProductItem));
-  //   });
-  //   router.push("/checkout");
-  // };
+
 
   const handlePayment = async () => {
     const outOfStockItems = cartItems.filter(item => item.stock_quantity <= 0);
@@ -179,7 +156,7 @@ const CartPage: React.FC = () => {
     router.push("/checkout");
   };
 
-  
+
   if (loading) {
     return (
       <>
@@ -257,7 +234,7 @@ const CartPage: React.FC = () => {
         )}
       </div>
     </div>
-    
+
   );
 };
 export default CartPage;

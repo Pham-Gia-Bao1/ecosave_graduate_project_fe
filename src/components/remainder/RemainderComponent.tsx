@@ -1,4 +1,4 @@
-import { getSaveProductOfUser } from "@/api";
+import api from "@/api";
 import { getProductsByIds } from "@/api/scan";
 import { ProductScan, UserProfile } from "@/types";
 import Image from "next/image";
@@ -49,7 +49,7 @@ export default function RemainderComponent({
   useEffect(() => {
     if (user?.id) {
       setLoading(true);
-      getSaveProductOfUser(user.id)
+      api.products.getSaved(user.id)
         .then((productIds) =>
           productIds ? getProductsByIds(productIds) : null
         )

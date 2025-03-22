@@ -1,21 +1,15 @@
-import { getProducts, getProductsByCategoryId } from "@/api";
+import api from "@/api";
 import { Category, Product } from "@/types";
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import ClassNames from "classnames";
 import { motion } from "framer-motion";
-import {
-
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductCategoriesProps {
   categories: Category[];
   setProducts: (products: Product[]) => void;
   setLoading: (loading: boolean) => void;
 }
-
-
 
 const ProductCategories: React.FC<ProductCategoriesProps> = ({
   categories,
@@ -24,7 +18,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [visibleItems, setVisibleItems] = useState(0); // State for visible items
+  const [visibleItems, setVisibleItems] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchProducts = useCallback(
@@ -33,8 +27,8 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
       setSelectedCategory(categoryId);
       try {
         const products = categoryId
-          ? await getProductsByCategoryId(categoryId)
-          : await getProducts({ page: 1 });
+          ? await api.products.getByCategoryId(categoryId)
+          : await api.products.getList({ page: 1 });
         setProducts(products);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -49,20 +43,19 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
     fetchProducts(null);
   }, [fetchProducts]);
 
-  // Calculate visible items on mount and resize
   useEffect(() => {
     const updateVisibleItems = () => {
       if (typeof window !== "undefined") {
-        const itemWidth = 150;
-        const newVisibleItems = Math.floor((window.innerWidth - 100) / itemWidth);
+        const newVisibleItems = Math.floor(
+          (window.innerWidth - 100) / (window.innerWidth < 640 ? 100 : 150)
+        );
         setVisibleItems(newVisibleItems);
       }
     };
 
-    updateVisibleItems(); // Initial calculation
-    window.addEventListener("resize", updateVisibleItems); // Update on resize
-
-    return () => window.removeEventListener("resize", updateVisibleItems); // Cleanup
+    updateVisibleItems();
+    window.addEventListener("resize", updateVisibleItems);
+    return () => window.removeEventListener("resize", updateVisibleItems);
   }, []);
 
   const buttonVariants = {
@@ -71,28 +64,25 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
     tap: { scale: 0.95, transition: { duration: 0.1 } },
   };
 
-  const itemWidth = 150;
+  const itemWidth = window.innerWidth < 640 ? 100 : 150;
   const totalItems = categories.length + 1;
   const maxScroll = (totalItems - visibleItems) * itemWidth;
 
   const handleScrollLeft = () => {
-    const newPosition = Math.max(scrollPosition - itemWidth * visibleItems, 0);
-    setScrollPosition(newPosition);
+    setScrollPosition((prev) => Math.max(prev - itemWidth * visibleItems, 0));
   };
 
   const handleScrollRight = () => {
-    const newPosition = Math.min(
-      scrollPosition + itemWidth * visibleItems,
-      maxScroll
+    setScrollPosition((prev) =>
+      Math.min(prev + itemWidth * visibleItems, maxScroll)
     );
-    setScrollPosition(newPosition);
   };
 
   return (
     <div className="w-full px-4 py-3">
-      <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
-        <h2 className="text-xl font-bold">Danh Mục Sản Phẩm</h2>
-        <span className="text-gray-500 mt-2 sm:mt-0 cursor-pointer">
+      <div className="flex lg:flex-col  sm:flex-row justify-between items-center text-center sm:text-left">
+        <h2 className="text-lg sm:text-xl font-bold hidden lg:block">Danh Mục Sản Phẩm</h2>
+        <span className="text-gray-500 mt-2 sm:mt-0 cursor-pointer text-sm sm:text-base ">
           Danh mục hàng đầu của tuần
         </span>
       </div>
@@ -102,7 +92,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
           onClick={handleScrollLeft}
           disabled={scrollPosition === 0}
           className={ClassNames(
-            "p-2 rounded-full",
+            "p-2 rounded-full hidden sm:flex",
             scrollPosition === 0
               ? "text-gray-300 cursor-not-allowed"
               : "text-gray-600 hover:bg-gray-200"
@@ -111,10 +101,10 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
           <ChevronLeft className="w-6 h-6" />
         </button>
 
-        <div className="overflow-hidden flex-1 w-full py-3">
+        <div className="overflow-x-auto scrollbar-hide flex-1 w-full py-3">
           <motion.div
             ref={containerRef}
-            className="flex gap-3 whitespace-nowrap"
+            className="flex gap-2 sm:gap-3 whitespace-nowrap"
             animate={{ x: -scrollPosition }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             style={{ minWidth: "max-content" }}
@@ -123,19 +113,18 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
               <motion.div
                 key={id ?? "all"}
                 className={ClassNames(
-                  "flex justify-center gap-2 items-center p-4 rounded-lg cursor-pointer transition-colors",
+                  "flex justify-center gap-2 items-center p-2 sm:p-4 rounded-lg cursor-pointer transition-colors",
                   selectedCategory === id
                     ? "bg-primary text-white shadow-lg"
                     : "bg-gray-100 text-gray-600 hover:shadow-lg"
                 )}
-                style={{ width: `${itemWidth}px` }}
                 onClick={() => fetchProducts(id)}
                 variants={buttonVariants}
                 initial="initial"
                 whileHover="hover"
                 whileTap="tap"
               >
-                <p className="font-medium text-sm text-center">{name}</p>
+                <p className="font-medium text-xs sm:text-sm text-center">{name}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -145,7 +134,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
           onClick={handleScrollRight}
           disabled={scrollPosition >= maxScroll}
           className={ClassNames(
-            "p-2 rounded-full",
+            "p-2 rounded-full hidden sm:flex",
             scrollPosition >= maxScroll
               ? "text-gray-300 cursor-not-allowed"
               : "text-gray-600 hover:bg-gray-200"
