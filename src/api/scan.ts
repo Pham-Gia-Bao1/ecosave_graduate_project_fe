@@ -1,5 +1,5 @@
 import { ProductScan } from "@/types";
-const serverUrl = process.env.REALTIME_SERVER_KEY || "http://localhost:4000/api";
+const serverUrl = process.env.REALTIME_SERVER_KEY || "https://ecosave-realtime.zeabur.app/api";
 import axios from 'axios';
 export const fetchProductByBarcode = async (barcode: string | number) => {
   try {
@@ -14,38 +14,25 @@ export const fetchProductByBarcode = async (barcode: string | number) => {
   }
 };
 export async function getProductsByIds(productIds: string[]): Promise<ProductScan[] | null> {
-  if (typeof window === "undefined") {
-    console.warn("⚠️ Không thể sử dụng sessionStorage trên server.");
-    return null;
-  }
+  if (!productIds?.length) return null;
 
-  const cacheKey = `products_by_ids_${productIds.join("_")}`;
-  const cachedData = sessionStorage.getItem(cacheKey);
+  if (typeof window === "undefined") return null;
 
-  if (cachedData) {
-    console.log(`✅ Lấy dữ liệu từ cache: ${cacheKey}`);
-    return JSON.parse(cachedData) as ProductScan[];
-  }
-
-  const url = `${serverUrl}/products/by-ids`; // API URL
-
-  try {
-    const response = await axios.post<{ status: string; code: number; message: string; data: ProductScan[] }>(
-      url, { productIds }
-    );
-
-    if (response.data.status === "success" && response.data.code === 200) {
-      console.log("✅ Lấy sản phẩm thành công:", response.data.data);
-      sessionStorage.setItem(cacheKey, JSON.stringify(response.data.data)); // Lưu vào cache
-      return response.data.data;
-    } else {
-      console.log("⚠️ Lỗi API:", response.data.message);
+  return axios
+    .post<{ status: string; code: number; message: string; data: ProductScan[] }>(
+      `${serverUrl}/products/by-ids`,
+      { productIds },
+      { timeout: 5000 } // Giới hạn thời gian chờ 5s để tối ưu tốc độ
+    )
+    .then(({ data }) => {
+      if (data.status !== "success" || data.code !== 200) return null;
+      console.log(`✅ Lấy ${data.data.length} sản phẩm thành công.`);
+      return data.data;
+    })
+    .catch((error) => {
+      console.error("❌ Lỗi khi lấy sản phẩm:", error);
       return null;
-    }
-  } catch (error) {
-    console.error("❌ Lỗi khi lấy danh sách sản phẩm:", error);
-    return null;
-  }
+    });
 }
 
 export async function getAllProducts(): Promise<ProductScan[] | null> {

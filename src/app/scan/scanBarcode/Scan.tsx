@@ -16,10 +16,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDateTime } from "@/utils";
 import {
-  convertToVietnamTime,
-  removeAMPM,
+  removeTimeFromDate,
 } from "@/utils/helpers/convertToVietnamTime";
-import { FaBoxOpen, FaCheckCircle, FaEye, FaRedo } from "react-icons/fa";
+import { FaCheckCircle, FaEye, FaRedo } from "react-icons/fa";
 
 // Định nghĩa types
 interface Toast {
@@ -225,7 +224,7 @@ const BarcodeScanner = () => {
           <p className="text-gray-700 text-lg flex items-center gap-2">
             <span className="font-semibold">Hạn sử dụng:</span>
             <span className="ml-1 text-gray-900">
-              {convertToVietnamTime(formatDateTime(product.expiryDate))}
+              {removeTimeFromDate(formatDateTime(product.expiryDate))}
             </span>
           </p>
         </div>

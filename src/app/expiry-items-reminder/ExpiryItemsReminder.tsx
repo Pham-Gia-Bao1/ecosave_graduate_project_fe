@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import CountdownTimer from "./CountdownTimer";
 import ToastNotification from "@/components/toast/ToastNotification";
 import { deleteSaveProductById } from "@/api";
+import { removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 
 const getDaysDifference = (expiryDate: string) => {
   const today = new Date();
@@ -203,7 +204,7 @@ export default function ExpiryItemsReminder({
                           daysRemaining
                         )}`}
                       >
-                        {formatDateTime(product.expiryDate)}
+                        {removeTimeFromDate(formatDateTime(product.expiryDate))}
                       </span>
                       <span className="font-bold pl-2">
                         {getDaysRemaining(product.expiryDate) >= 0

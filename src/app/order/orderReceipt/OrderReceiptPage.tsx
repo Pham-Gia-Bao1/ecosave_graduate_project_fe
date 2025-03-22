@@ -12,7 +12,7 @@ import { setTotalItems } from "@/redux/cartSlice";
 import { RootState } from "@/redux/store";
 import { PaymentItem, Store } from "@/types";
 import { formatCurrency, getCurrentDateTime } from "@/utils";
-import { convertToVietnamTime } from "@/utils/helpers/convertToVietnamTime";
+import { removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 import getCookie from "@/utils/helpers/getCookie";
 import { FileText } from "lucide-react";
 import Link from "next/link";
@@ -240,7 +240,7 @@ const OrderReceipt = () => {
                 </p>
                 <p>
                   <span className="font-semibold">Ngày mua : </span>
-                  {convertToVietnamTime(getCurrentDateTime())}
+                  {removeTimeFromDate(getCurrentDateTime())}
                 </p>
               </section>
               {/* Bảng sản phẩm */}
