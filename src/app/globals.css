@@ -404,3 +404,60 @@
     opacity: 0;
   }
 }
+.square {
+  width: 320px;
+  height: 250px;
+  background: transparent;
+  border: 10px solid #999;
+  position: relative;
+  overflow: hidden;
+}
+
+.square video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the video fills the container */
+  z-index: 1; /* Place the video below the scan bar */
+}
+
+.scan {
+  display: block;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 255, 255, 0.1) 0%,
+    rgba(0, 255, 255, 0.8) 50%,
+    rgba(0, 255, 255, 0.1) 100%
+  );
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  position: absolute; /* Ensure the scan bar moves independently */
+  top: 0;
+  left: 0;
+  z-index: 2; /* Place the scan bar above the video */
+  animation: scanning 1.5s ease-in-out infinite alternate, pulse 0.3s infinite;
+}
+
+@keyframes scanning {
+  0% {
+    transform: translateY(-80px);
+  }
+  100% {
+    transform: translateY(250px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  }
+}

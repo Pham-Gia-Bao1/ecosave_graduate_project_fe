@@ -143,7 +143,7 @@ const Header: React.FC = () => {
               <Notifications className="text-gray-600 cursor-pointer hover:text-primary" />
             </Badge>
           </Link>
-          <Link href="/favorites">
+          <Link href="/wishlist">
             <Favorite className="text-gray-600 cursor-pointer hover:text-primary" />
           </Link>
           <Link href="/cart">
@@ -182,7 +182,7 @@ const Header: React.FC = () => {
               <p className="hover:text-primary-light">{label}</p>
             </Link>
           ))}
-          <Link href="/account" onClick={toggleSidebar}>
+          <Link href="/profile" onClick={toggleSidebar}>
             <div className="flex items-center space-x-2 cursor-pointer hover:text-primary-light transition-colors duration-300">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <Image

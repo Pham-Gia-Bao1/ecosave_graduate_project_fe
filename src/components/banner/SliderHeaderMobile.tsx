@@ -1,12 +1,11 @@
+import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-const SliderHeaderMobile: React.FC = () => {
-  const slides = [
-    "https://www.bigc.vn/files/a-31-08-2023-11-41-07/09-20-03-ng-y-h-i-n-ng-s-n-l-tb-1080big.jpg",
-    "https://www.bigc.vn/files/omni-banner-31-07-2023-14-47-58/jan-2025-02-01-2025-14-52-32/09-01-22-01-mega-sale-c-ng-go-s-m-t-t-y-blog-cover-1080x540-bigc.png",
-    "https://www.bigc.vn/files/omni-banner-31-07-2023-14-47-58/january-2024-05-01-2024-17-52-54/bd-ulv-omo-blog-cover-article-bigc-1080-x-540.jpg",
-  ];
+interface SliderHeaderMobileProps {
+  slides: string[];
+}
 
+const SliderHeaderMobile: React.FC<SliderHeaderMobileProps> = ({ slides }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -16,7 +15,7 @@ const SliderHeaderMobile: React.FC = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     if (sliderRef.current) {
@@ -28,7 +27,7 @@ const SliderHeaderMobile: React.FC = () => {
   }, [currentIndex]);
 
   return (
-    <div className="relative w-full h-[150px] overflow-hidden">
+    <div className="relative w-full h-[150px] lg:h-full overflow-hidden">
       {/* Slider Container */}
       <div
         ref={sliderRef}
@@ -36,7 +35,9 @@ const SliderHeaderMobile: React.FC = () => {
       >
         {slides.map((image, index) => (
           <div key={index} className="w-full flex-shrink-0 snap-center">
-            <img
+            <Image
+              width={200}
+              height={200}
               src={image}
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover rounded-lg"

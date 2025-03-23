@@ -278,7 +278,7 @@ export default function Products({
       exit={{ opacity: 0, x: -10, scale: 0.98 }}
       transition={{ type: "spring", stiffness: 80, damping: 16 }}
       key={product.id}
-      className="relative rounded-lg shadow-soft bg-white pb-2 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
+      className="relative rounded-lg lg:pb-2  shadow-soft bg-white pb-2 transition-transform duration-300 hover:scale-105 hover:shadow-strong"
     >
       {product.discount_percent > 0 && (
         <span className="absolute top-1 left-1 bg-orange-500 text-white text-xs sm:text-sm font-bold px-1 py-0.5 rounded">
@@ -348,7 +348,7 @@ export default function Products({
 
       <div className="flex justify-between mt-2 px-2 sm:px-3">
         <motion.button
-          className={`p-1 border rounded-full transition-all duration-300 ${
+          className={`p-2 border rounded-full transition-all duration-300 ${
             favoriteProductIds.includes(product.id)
               ? "bg-orange-500 text-white"
               : "bg-white text-red-500 hover:bg-red-500 hover:text-white"
@@ -369,7 +369,7 @@ export default function Products({
 
         <button
           onClick={() => handleAddToCart(product)}
-          className="p-1 w-[70%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
+          className="p-2 w-[80%] flex justify-center bg-primary rounded-full text-white hover:bg-primary-light"
         >
           {loading[product.id] ? <SubLoading /> : <AiOutlineShoppingCart size={16} />}
         </button>
