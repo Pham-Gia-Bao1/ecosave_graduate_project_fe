@@ -203,7 +203,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
                 />
               </div>
               <div>
-                <p className="text-gray-600 text-sm">Hello</p>
+                <p className="text-gray-600 text-sm">Xin chào</p>
                 <p className="text-gray-800 font-semibold text-lg">
                   {user?.username || "Guest"}
                 </p>

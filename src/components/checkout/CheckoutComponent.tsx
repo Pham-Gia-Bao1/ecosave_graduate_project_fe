@@ -55,18 +55,23 @@ const CheckoutComponent = ({ products }: { products: PaymentItem[] }) => {
     );
   };
 
+  const generateRandomId = (min = 10, max = 99) =>
+    Math.floor(min + Math.random() * (max - min + 1));
+
+  const generateOrderCode = (prefix = "ECOSAVE") =>
+    `${prefix}${Math.floor(10000000000 + Math.random() * 90000000000)}`;
+
+
   const handleBuyClick = async () => {
     setLoading(true);
     const orderData = {
-      id: Math.floor(10 + Math.random() * 90),
+      id: generateRandomId(),
       user_id: user?.id || 1,
       store_id: products[0]?.storeId || selectedItems[0]?.storeId || 1,
       total_price: totalPrice.toFixed(0),
       status: "pending",
       order_date: new Date().toISOString(),
-      order_code: `ECOSAVE${Math.floor(
-        10000000000 + Math.random() * 90000000000
-      )}`,
+      order_code: generateOrderCode(),
     };
     document.cookie = `orderData=${encodeURIComponent(
       JSON.stringify(orderData)
