@@ -253,12 +253,12 @@ export const products = {
     const token = getToken();
     if (!token) return null;
 
-    const { data } = await api.get<{ success: boolean; products: { code: string }[] }>('/saved-products/all', {
+    const { data } = await api.get<{ success: boolean; data: { code: string }[] }>('/saved-products/all', {
       params: { user_id: userId },
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    return data.success && data.products.length ? data.products.map(p => p.code) : null;
+    return data && data.data.length  ? data.data.map(p => p.code) : null;
   },
   checkExists: async (userId: number, code: string): Promise<boolean> => {
     const token = getToken();

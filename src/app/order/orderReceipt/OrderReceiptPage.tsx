@@ -24,8 +24,10 @@ interface ExtendedOrderData extends OrderData {
 
 const OrderReceipt = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<"success" | "failure">("success");
-  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [paymentStatus, setPaymentStatus] = useState<"success" | "failure">(
+    "success"
+  );
+  const [totalAmount, setTotalAmount] = useState<string>('');
   const [orderId, setOrderId] = useState<number | null>(null);
   const [orderCode, setOrderCode] = useState<string>("");
   const [selectedItems, setSelectedItems] = useState<PaymentItem[]>([]);
@@ -52,8 +54,12 @@ const OrderReceipt = () => {
     try {
       const params = new URLSearchParams(window.location.search);
       const responseCode = params.get("vnp_ResponseCode");
-      const amount = Number(params.get("vnp_Amount")) / 100; // VNPay trả về số tiền * 100
-      setTotalAmount(amount);
+      const amount = Number(params.get("vnp_Amount")) / 100; // Chia cho 100 để lấy số tiền thực tế
+
+      // Khi hiển thị, định dạng số
+      const formattedAmount = new Intl.NumberFormat("vi-VN").format(amount) + " đ";
+      setTotalAmount(formattedAmount); // Lưu giá trị số vào state
+      console.log(formattedAmount);
 
       if (responseCode !== "00") {
         setPaymentStatus("failure");
@@ -61,12 +67,16 @@ const OrderReceipt = () => {
       }
 
       const orderData = getCookie("orderData");
-      if (!orderData) throw new Error("No order data found");
+      if (!orderData) throw new Error("Không tìm thấy dữ liệu đơn hàng");
+      console.log(orderData);
 
-      const orderDataObject: OrderData = { ...JSON.parse(orderData), status: "pending" };
+      const orderDataObject: OrderData = {
+        ...JSON.parse(orderData),
+        status: "pending",
+      };
       const storeId = Number(orderDataObject.store_id || 1);
       const orderStore = await api.stores.getById(storeId);
-      if (!orderStore) throw new Error("Store not found");
+      if (!orderStore) throw new Error("Không tìm thấy cửa hàng");
 
       setStore(orderStore);
       document.cookie = `storeLocation=${encodeURIComponent(
@@ -76,14 +86,17 @@ const OrderReceipt = () => {
       const orderItems = getCookie("orderItems");
       if (orderItems) setSelectedItems(JSON.parse(orderItems));
 
-      const newOrder = await api.orders.create(orderDataObject) as ExtendedOrderData;
-      if (!newOrder) throw new Error("Failed to create order");
+      const newOrder = (await api.orders.create(
+        orderDataObject
+      )) as ExtendedOrderData;
+      if (!newOrder) throw new Error("Tạo đơn hàng thất bại");
 
       setOrderCode(newOrder.order_code);
       setOrderId(newOrder.id);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      setToast({ message: `Error: ${errorMessage}`, keyword: "ERROR" });
+      const errorMessage =
+        error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định";
+      setToast({ message: `Lỗi: ${errorMessage}`, keyword: "ERROR" });
     } finally {
       setLoading(false);
       clearCookie("orderData");
@@ -100,18 +113,24 @@ const OrderReceipt = () => {
       const orderItems = selectedItems.map((item) => ({
         product_id: item.id,
         quantity: Number(item.quantity),
-        price: typeof item.price === "string" ? parseFloat(item.price.replace(/[^\d.-]/g, "")) : item.price,
+        price:
+          typeof item.price === "string"
+            ? parseFloat(item.price.replace(/[^\d.-]/g, ""))
+            : item.price,
       }));
 
       await createOrderItems(orderId, orderItems);
-      await Promise.all(selectedItems.map((item) => api.cart.remove(store.id, item.id)));
+      await Promise.all(
+        selectedItems.map((item) => api.cart.remove(store.id, item.id))
+      );
 
       const cartData = await api.cart.getDetail(store.id);
       const items = cartData?.data?.store?.items ?? [];
       dispatch(setTotalItems(items.length));
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      setToast({ message: `Error processing order items: ${errorMessage}`, keyword: "ERROR" });
+      const errorMessage =
+        error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định";
+      setToast({ message: `Lỗi: ${errorMessage}`, keyword: "ERROR" });
     }
   }, [orderId, selectedItems, store?.id, dispatch]);
 
@@ -131,7 +150,9 @@ const OrderReceipt = () => {
 
   return (
     <div className="flex justify-center items-center min-h-[600px]">
-      {toast && <ToastNotification message={toast.message} keyword={toast.keyword} />}
+      {toast && (
+        <ToastNotification message={toast.message} keyword={toast.keyword} />
+      )}
       <div
         className={`bg-white p-8 rounded-xl relative text-center border border-gray-300 ${
           paymentStatus === "failure" ? "bg-red-100" : "bg-green-100"
@@ -161,7 +182,11 @@ const OrderReceipt = () => {
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             ) : (
               <svg
@@ -172,7 +197,11 @@ const OrderReceipt = () => {
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             )}
           </div>
@@ -182,7 +211,9 @@ const OrderReceipt = () => {
             paymentStatus === "failure" ? "text-red-600" : "text-green-600"
           } mb-2`}
         >
-          {paymentStatus === "failure" ? "Thanh toán thất bại" : "Thanh toán thành công"}
+          {paymentStatus === "failure"
+            ? "Thanh toán thất bại"
+            : "Thanh toán thành công"}
         </h1>
         <p className="text-gray-600 mb-6">
           {paymentStatus === "failure"
@@ -249,15 +280,26 @@ const OrderReceipt = () => {
                   {selectedItems.map((item, index) => {
                     const numericPrice =
                       typeof item.price === "string"
-                        ? parseFloat(item.price.replace(/\./g, "").replace(",", "."))
+                        ? parseFloat(
+                            item.price.replace(/\./g, "").replace(",", ".")
+                          )
                         : item.price;
                     const total = numericPrice * Number(item.quantity);
                     return (
-                      <tr key={index} className="border-b border-dashed border-gray-200">
+                      <tr
+                        key={index}
+                        className="border-b border-dashed border-gray-200"
+                      >
                         <td className="py-2 px-2">{item.name}</td>
-                        <td className="py-2 px-2 text-right">{formatCurrency(numericPrice)}</td>
-                        <td className="py-2 px-2 text-right">{item.quantity}</td>
-                        <td className="py-2 px-2 text-right">{formatCurrency(total)}</td>
+                        <td className="py-2 px-2 text-right">
+                          {formatCurrency(numericPrice)}
+                        </td>
+                        <td className="py-2 px-2 text-right">
+                          {item.quantity}
+                        </td>
+                        <td className="py-2 px-2 text-right">
+                          {formatCurrency(total)}
+                        </td>
                       </tr>
                     );
                   })}
@@ -266,11 +308,11 @@ const OrderReceipt = () => {
               <div className="text-right mt-4 text-sm space-y-2">
                 <p>
                   <span className="font-semibold">TỔNG TIỀN T.TOÁN: </span>
-                  {formatCurrency(totalAmount)}
+                  {totalAmount}
                 </p>
                 <p>
                   <span className="font-semibold">TIỀN KHÁCH TRẢ: </span>
-                  {formatCurrency(totalAmount)}
+                  {totalAmount}
                 </p>
                 <p className="text-xs text-gray-500">
                   Điểm tích lũy (10.000đ = 1 điểm): 8.9

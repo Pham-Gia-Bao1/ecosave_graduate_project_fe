@@ -438,7 +438,7 @@
   top: 0;
   left: 0;
   z-index: 2; /* Place the scan bar above the video */
-  animation: scanning 1.5s ease-in-out infinite alternate, pulse 0.3s infinite;
+  animation: scanning 1.5s ease-in-out infinite alternate, pulse1 0.3s infinite;
 }
 
 @keyframes scanning {
@@ -450,7 +450,7 @@
   }
 }
 
-@keyframes pulse {
+@keyframes pulse1 {
   0% {
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
   }
