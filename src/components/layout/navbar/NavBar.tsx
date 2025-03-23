@@ -316,9 +316,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
               <h2 className="text-lg font-semibold text-white">
                 Thông báo sản phẩm gần bạn và nhắc nhở
               </h2>
-              <p className="text-gray-200">
-                Bạn có {notificationCount} thông báo mới
-              </p>
+
             </div>
             <button
               onClick={toggleSidebar}
@@ -327,7 +325,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
               <Close fontSize="large" />
             </button>
           </div>
-          <div className="w-full flex sticky top-20 z-50">
+          <div className="w-full flex sticky top-14 z-50">
             <div
               onClick={() => setTypeOfNotification("new")}
               className={`w-1/2 py-2 bg-white text-center cursor-pointer transition-colors ${

@@ -225,9 +225,6 @@ export default function Products({
   const handleAddToCart = useCallback(
     async (product: Product) => {
       setLoading((prev) => ({ ...prev, [product.id]: true }));
-
-      dispatch(increment());
-
       try {
         const result = await api.cart.add(product.id, 1);
         if (!result) throw new Error(result.message);
