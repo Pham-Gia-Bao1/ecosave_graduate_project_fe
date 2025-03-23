@@ -12,8 +12,9 @@ import { formatCurrency } from "@/utils";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-const realTimeServerURL = "https://ecosave-realtime.zeabur.app/";
 import { motion } from "framer-motion";
+import notificationSound from '../../assets/audio/notification.mp3';
+const realTimeServerURL = "https://ecosave-realtime.zeabur.app/";
 
 export default function NotificationsComponent() {
   const dispatch = useDispatch();
@@ -21,16 +22,32 @@ export default function NotificationsComponent() {
     notifications: Notification[];
   };
   const [deletedProducts, setDeletedProducts] = useState<number[]>([]);
-
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const hasFetched = useRef(false);
-  const [expandedStores, setExpandedStores] = useState<Record<number, boolean>>(
-    {}
-  );
+  const [expandedStores, setExpandedStores] = useState<Record<number, boolean>>({});
   const userLocation = useUserLocation();
-  // State để kiểm soát số lượng cửa hàng hiển thị
   const [visibleCount, setVisibleCount] = useState(20);
   const ITEMS_PER_PAGE = 20;
+
+  // Thêm tham chiếu đến audio
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Khởi tạo audio khi component mount
+  useEffect(() => {
+    audioRef.current = new Audio(notificationSound); // Đường dẫn tới file âm thanh
+    audioRef.current.preload = 'auto';
+  }, []);
+
+  // Phát âm thanh
+  const playNotificationSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0; // Reset về đầu
+      audioRef.current.play().catch(error => {
+        console.log("Error playing sound:", error);
+      });
+    }
+  };
+
   useEffect(() => {
     if (!hasFetched.current) {
       const storedNotifications = localStorage.getItem("notifications");
@@ -42,6 +59,7 @@ export default function NotificationsComponent() {
       hasFetched.current = true;
     }
   }, []);
+
   useEffect(() => {
     newNotifications.forEach((notification) => {
       switch (notification.event) {
@@ -57,10 +75,8 @@ export default function NotificationsComponent() {
     });
   }, [newNotifications]);
 
-  // 🟢 Tạo thông báo mới khi có sản phẩm mới
   const handleProductCreated = (notification: Notification) => {
     setNotifications((prev) => {
-      // 🔴 Kiểm tra nếu sản phẩm đã bị xóa thì không thêm vào notifications
       if (deletedProducts.includes(notification.data.product.id)) {
         return prev;
       }
@@ -75,13 +91,13 @@ export default function NotificationsComponent() {
           JSON.stringify(updatedNotifications)
         );
         dispatch(increment());
+        playNotificationSound(); // Phát âm thanh khi có thông báo mới
         return updatedNotifications;
       }
       return prev;
     });
   };
 
-  // 🟡 Cập nhật thông báo khi sản phẩm được chỉnh sửa
   const handleProductUpdated = (notification: Notification) => {
     setNotifications((prev) => {
       const updatedNotifications = prev.map((n) =>
@@ -91,8 +107,8 @@ export default function NotificationsComponent() {
               data: {
                 ...notification.data,
                 product: {
-                  ...n.data.product, // Giữ nguyên dữ liệu cũ
-                  ...notification.data.product, // Ghi đè dữ liệu mới
+                  ...n.data.product,
+                  ...notification.data.product,
                 },
               },
             }
@@ -102,14 +118,13 @@ export default function NotificationsComponent() {
         "notifications",
         JSON.stringify(updatedNotifications)
       );
+      playNotificationSound(); // Phát âm thanh khi có cập nhật
       return updatedNotifications;
     });
   };
 
-  // 🛑 Xóa thông báo khỏi localStorage khi sản phẩm bị xóa
   const removeNotification = (productId: number) => {
-    setDeletedProducts((prev) => [...prev, productId]); // 🔥 Lưu vào danh sách đã bị xóa
-
+    setDeletedProducts((prev) => [...prev, productId]);
     setNotifications((prev) => {
       const updatedNotifications = prev.filter(
         (n) => n.data.product.id !== productId
@@ -125,7 +140,7 @@ export default function NotificationsComponent() {
 
   const groupedByStore = notifications.reduce((acc, notification) => {
     const storeId = notification.data.product.store?.id;
-    if (!storeId) return acc; // Bỏ qua nếu không có store
+    if (!storeId) return acc;
 
     if (!acc[storeId]) {
       acc[storeId] = { store: notification.data.product.store, products: [] };
@@ -135,6 +150,7 @@ export default function NotificationsComponent() {
   }, {} as Record<number, { store: Store; products: Product[] }>);
 
   const storeNotifications = Object.values(groupedByStore);
+
   const toggleStore = (storeId: number) => {
     setExpandedStores((prev) => ({
       ...prev,
@@ -158,9 +174,7 @@ export default function NotificationsComponent() {
 
     const differenceInMinutes = Math.floor(differenceInTime / (1000 * 60));
     const differenceInHours = Math.floor(differenceInTime / (1000 * 60 * 60));
-    const differenceInDays = Math.floor(
-      differenceInTime / (1000 * 60 * 60 * 24)
-    );
+    const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
 
     if (differenceInMinutes < 1) {
       return "Vừa xong";
@@ -186,17 +200,17 @@ export default function NotificationsComponent() {
             .map(({ store, products }) => (
               <motion.li
                 key={store.id}
-                initial={{ opacity: 0, x: 50 }} // Xuất hiện từ phải
-                animate={{ opacity: 1, x: 0 }} // Hiện tại vị trí bình thường
-                exit={{ opacity: 0, x: -50 }} // Ẩn đi về bên trái
-                transition={{ type: "spring", stiffness: 80, damping: 14 }} // Mượt hơn
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ type: "spring", stiffness: 80, damping: 14 }}
                 className="border-b py-4 last:border-b-0"
               >
                 <div
                   className="flex items-center justify-between cursor-pointer"
                   onClick={() => toggleStore(store.id)}
                 >
-                  <div className="flex justify-start  overflow-hidden items-center gap-3 relative p-4">
+                  <div className="flex justify-start overflow-hidden items-center gap-3 relative p-4">
                     <Link
                       href={`/stores/${store.id}`}
                       className="relative block w-[50px] h-[50px] flex-shrink-0"
@@ -255,14 +269,14 @@ export default function NotificationsComponent() {
                     {products.map((product) => (
                       <motion.li
                         key={product.id}
-                        initial={{ opacity: 0, x: 50 }} // Xuất hiện từ phải
-                        animate={{ opacity: 1, x: 0 }} // Hiện tại vị trí bình thường
-                        exit={{ opacity: 0, x: -50 }} // Ẩn đi về bên trái
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
                         transition={{
                           type: "spring",
                           stiffness: 80,
                           damping: 14,
-                        }} // Mượt hơn
+                        }}
                         className="flex items-center gap-3 border-l-2 pl-4 hover:bg-gray-100 p-2 rounded-lg"
                       >
                         <Link
