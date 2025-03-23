@@ -15,10 +15,9 @@ import ToastNotification from "@/components/toast/ToastNotification";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDateTime } from "@/utils";
-import {
-  removeTimeFromDate,
-} from "@/utils/helpers/convertToVietnamTime";
+import { removeTimeFromDate } from "@/utils/helpers/convertToVietnamTime";
 import { FaCheckCircle, FaEye, FaRedo } from "react-icons/fa";
+import { ScanLine } from "./ScanLine";
 
 // Định nghĩa types
 interface Toast {
@@ -194,13 +193,13 @@ const BarcodeScanner = () => {
 
   const handleSaveReminder = useCallback(
     (days: number) => {
+      console.log(days);
       toggleModal();
       storeProductToRemainder(days);
     },
     [toggleModal, storeProductToRemainder]
   );
 
-  console.log(state.product);
   const ProductDisplay = memo(({ product }: { product: ProductScan }) => (
     <div className="relative flex items-center justify-center min-h-[400px] mt-6">
       {/* Main Content */}
@@ -294,9 +293,16 @@ const BarcodeScanner = () => {
                 <h2 className="text-xl font-bold">📸 Quét mã Barcode</h2>
                 <p className="text-green-400 font-semibold">Đang quét...</p>
                 <div
-                  className="relative w-[320px] h-[250px] overflow-hidden bg-gray-800 border-4 border-blue-500 shadow-lg"
+                  className="square relative w-[320px] h-[250px] overflow-hidden bg-gray-800 border-4 border-blue-500 shadow-lg"
                   ref={videoRef}
-                />
+                >
+                  <video
+                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    autoPlay
+                    playsInline
+                  />
+                  <span className="scan"></span>
+                </div>
                 <button
                   onClick={() => router.push("/scan")}
                   className="absolute top-[75%] right-[49%] text-white bg-white hover:bg-gray-100 p-2 rounded-full"

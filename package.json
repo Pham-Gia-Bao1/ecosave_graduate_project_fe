@@ -19,6 +19,7 @@
     "@goongmaps/goong-js": "^1.0.9",
     "@goongmaps/goong-map-react": "^1.1.2",
     "@goongmaps/goong-sdk": "^1.0.7",
+    "@lottiefiles/dotlottie-react": "^0.13.2",
     "@mui/icons-material": "^6.3.1",
     "@mui/material": "^6.2.0",
     "@radix-ui/react-avatar": "^1.1.3",

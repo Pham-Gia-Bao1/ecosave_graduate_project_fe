@@ -88,7 +88,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
   return (
     <div className="w-full px-4 py-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
+      <div className="lg:flex hidden flex-col sm:flex-row justify-between items-center text-center sm:text-left">
         <h2 className="text-lg sm:text-xl font-bold hidden sm:block">
           Danh Mục Sản Phẩm
         </h2>
@@ -130,7 +130,7 @@ const ProductCategories: React.FC<ProductCategoriesProps> = ({
                 key={id ?? "all"}
                 className={`flex justify-center items-center px-4 py-2 rounded-lg cursor-pointer transition-colors ${
                   selectedCategory === id
-                    ? "bg-blue-500 text-white shadow-lg"
+                    ? "bg-primary text-white shadow-lg"
                     : "bg-gray-100 text-gray-600 hover:shadow-lg"
                 }`}
                 onClick={() => fetchProducts(id)}

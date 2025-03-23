@@ -21,7 +21,7 @@ export default function ExpiryPage() {
     console.log(user?.id);
     if (user?.id) {
       setLoading(true);
-      api.products.getSaved(user.id)
+      api.products.getSavedAll(user.id)
         .then((productIds) => {
           console.log("Saved product IDs:", productIds);
           return productIds ? getProductsByIds(productIds) : null;

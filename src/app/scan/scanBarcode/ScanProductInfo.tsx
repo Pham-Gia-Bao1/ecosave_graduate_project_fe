@@ -63,13 +63,13 @@ export default function ScanProduct({
       {/* Hình ảnh sản phẩm */}
       <div className="relative">
         <Image
-          width={200}
+          width={100}
           height={200}
           src={product.images[0]}
           alt={product.title}
-          className="w-full h-60 object-cover rounded-md"
+          className="w-full h-60 object-contain rounded-md"
         />
-    
+
       </div>
       {/* Thông tin sản phẩm */}
       <h1 className="text-2xl font-bold text-gray-900 mt-4">{product.title}</h1>

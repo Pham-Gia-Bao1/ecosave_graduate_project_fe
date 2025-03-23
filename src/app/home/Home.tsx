@@ -21,6 +21,11 @@ import { Category, Product } from "@/types";
 import HomeMapSecsion from "@/components/map/Map";
 import Link from "next/link";
 import SliderHeaderMobile from "@/components/banner/SliderHeaderMobile";
+const slides1 = [
+  "https://www.bigc.vn/files/a-31-08-2023-11-41-07/09-20-03-ng-y-h-i-n-ng-s-n-l-tb-1080big.jpg",
+  "https://www.bigc.vn/files/omni-banner-31-07-2023-14-47-58/jan-2025-02-01-2025-14-52-32/09-01-22-01-mega-sale-c-ng-go-s-m-t-t-y-blog-cover-1080x540-bigc.png",
+  "https://www.bigc.vn/files/omni-banner-31-07-2023-14-47-58/january-2024-05-01-2024-17-52-54/bd-ulv-omo-blog-cover-article-bigc-1080-x-540.jpg",
+];
 type HomeType = {
   listCategories: Category[];
   listProducts: Product[];
@@ -95,7 +100,7 @@ export default function Home({
             Khám phá và thu thập những ưu đãi tuyệt vời ngay gần bạn để tiết
             kiệm hơn mỗi ngày!
           </p>
-          <SliderHeaderMobile />
+          <div className="lg:hidden"><SliderHeaderMobile slides={slides1}/></div>
           <div className="mt-6 space-x-4 hidden lg:flex">
             <Link href="/products">
               <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-light">
