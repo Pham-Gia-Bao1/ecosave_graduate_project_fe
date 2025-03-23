@@ -59,8 +59,7 @@ const CheckoutComponent = ({ products }: { products: PaymentItem[] }) => {
     Math.floor(min + Math.random() * (max - min + 1));
 
   const generateOrderCode = (prefix = "ECOSAVE") =>
-    `${prefix}${Math.floor(10000000000 + Math.random() * 90000000000)}`;
-
+    `${prefix}${Math.floor(10000 + Math.random() * 90000)}`;
 
   const handleBuyClick = async () => {
     setLoading(true);
