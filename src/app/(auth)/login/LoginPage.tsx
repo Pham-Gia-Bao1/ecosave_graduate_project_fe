@@ -33,13 +33,14 @@ const Login = () => {
     e.preventDefault();
     setEmailError(!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email));
     setPasswordError(password.length < 6);
-
+    router.push("/")
     if (isFormValid) {
       setLoading(true);
       setErrorMessage(null); // Reset previous errors
       try {
         const data = await  api.auth.login(email, password);
         storeUserData(data);
+
       } catch (error: any) {
         const errorCode: keyof typeof loginErrors.errors =
           error?.response?.status || 500; // Explicitly type errorCode
