@@ -7,8 +7,8 @@ import Link from "next/link";
 import { motion, useInView, useAnimation } from "framer-motion";
 import founderGiaBao from "../../assets/images/users/bao.jpg";
 import founderBichQuyen from "../../assets/images/users/quyen.jpg";
-import founderThiHi from "../../assets/images/products/product3.png";
-import founderThuyNgan from "../../assets/images/products/product4.png";
+import founderThiHi from "../../assets/images/users/hi.jpg";
+import founderThuyNgan from "../../assets/images/users/ngan.jpg";
 interface FounderProps {
   name: string;
   role: string;
@@ -72,7 +72,7 @@ const FadeInWhenVisible = ({ children }: { children: React.ReactNode }) => {
 
 const Founder = ({ founder, index }: { founder: FounderProps; index: number }) => {
   return (
-    <motion.div 
+    <motion.div
       className="bg-white rounded-xl overflow-hidden shadow-soft hover:shadow-strong transition-all duration-300 flex flex-col h-full"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ const Founder = ({ founder, index }: { founder: FounderProps; index: number }) =
       <div className="relative h-64 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/20" />
         <Image
-          src={founder.image} 
+          src={founder.image}
           alt={founder.name}
           fill
           style={{ objectFit: "cover" }}
@@ -105,8 +105,8 @@ const AboutPage = () => {
       <section className="relative overflow-hidden bg-primary py-20 lg:py-28">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-light rounded-full opacity-20 blur-3xl" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary-light rounded-full opacity-20 blur-3xl" />
-        
-        <motion.div 
+
+        <motion.div
           className="container mx-auto px-4 relative z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -125,7 +125,7 @@ const AboutPage = () => {
                 Chúng tôi kết nối người tiêu dùng thông minh với sản phẩm giảm giá gần nhất và giúp giảm lãng phí thực phẩm thông qua công nghệ quét mã vạch tiên tiến.
               </p>
             </motion.div>
-            
+
             <motion.div
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -155,8 +155,8 @@ const AboutPage = () => {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Sứ mệnh của chúng tôi</h2>
               <p className="text-lg text-gray-600">
-                Tại EcoSave, chúng tôi tin rằng công nghệ có thể giúp mọi người tiết kiệm tiền và giảm lãng phí thực phẩm. 
-                Thông qua nền tảng của mình, chúng tôi giúp người tiêu dùng tìm thấy sản phẩm giảm giá gần nhất và theo dõi 
+                Tại EcoSave, chúng tôi tin rằng công nghệ có thể giúp mọi người tiết kiệm tiền và giảm lãng phí thực phẩm.
+                Thông qua nền tảng của mình, chúng tôi giúp người tiêu dùng tìm thấy sản phẩm giảm giá gần nhất và theo dõi
                 ngày hết hạn thông qua công nghệ quét mã vạch, tạo ra một cộng đồng tiêu dùng có trách nhiệm.
               </p>
             </div>
@@ -215,7 +215,7 @@ const AboutPage = () => {
             <div className="max-w-3xl mx-auto text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Người sáng lập</h2>
               <p className="text-lg text-gray-600">
-                Gặp gỡ đội ngũ đam mê và tài năng đằng sau EcoSave, những người chia sẻ tầm nhìn về việc thay đổi cách 
+                Gặp gỡ đội ngũ đam mê và tài năng đằng sau EcoSave, những người chia sẻ tầm nhìn về việc thay đổi cách
                 mua sắm và tiêu dùng.
               </p>
             </div>
@@ -267,7 +267,7 @@ const AboutPage = () => {
           <div className="max-w-5xl mx-auto bg-secondary rounded-2xl p-8 md:p-12 shadow-soft relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full -ml-32 -mb-32" />
-            
+
             <div className="relative z-10">
               <div className="md:flex items-center justify-between">
                 <div className="md:w-2/3 mb-8 md:mb-0">
