@@ -354,29 +354,33 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
         </div>
       </Drawer>
       <Drawer anchor="right" open={isWishlistOpen} onClose={toggleWishlist}>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={slideInFromRight}
+        className="w-[300px] md:w-[400px] min-h-full h-auto bg-white p-6"
+      >
         <motion.div
-          initial="hidden"
-          animate="visible"
           variants={slideInFromRight}
-          className="w-[300px] md:w-[400px] min-h-full h-auto bg-white p-6"
+          className="flex justify-between items-center mb-6"
         >
-          <motion.div
-            variants={slideInFromRight}
-            className="flex justify-between items-center mb-6"
-          >
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800">
-                Danh sách yêu thích
-              </h2>
-              <p className="text-gray-600">{wishlist.length} sản phẩm</p>
-            </div>
-            <IconButton onClick={toggleWishlist}>
-              <Close />
-            </IconButton>
-          </motion.div>
-          <div className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto overflow-x-hidden">
-            {wishlist.length > 0 ? (
-              wishlist.map((item: WishList, index) => (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800">Danh sách yêu thích</h2>
+            <p className="text-gray-600">{wishlist.length} sản phẩm</p>
+          </div>
+          <IconButton onClick={toggleWishlist}>
+            <Close />
+          </IconButton>
+        </motion.div>
+
+        <div className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto overflow-x-hidden">
+          {wishlist.length > 0 ? (
+            wishlist.map((item, index) => {
+              if (!item.product || !Array.isArray(item.product.images) || item.product.images.length === 0) {
+                return null;
+              }
+
+              return (
                 <motion.div
                   key={item.id}
                   variants={slideInFromRight}
@@ -387,10 +391,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
                 >
                   <div className="w-16 h-16 relative flex-shrink-0">
                     <Image
-                      src={
-                        item.product.images[0]?.image_url ||
-                        "/placeholder-image.jpg"
-                      }
+                      src={item.product.images[0]?.image_url || "/placeholder-image.jpg"}
                       alt={item.product.name}
                       layout="fill"
                       objectFit="cover"
@@ -402,19 +403,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
                       {item.product.name}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {formatMoney(
-                        Number.parseInt(
-                          item.product.discounted_price.toLocaleString()
-                        ),
-                        "VND"
-                      )}
+                      {formatMoney(Number.parseInt(item.product.discounted_price.toLocaleString()), "VND")}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <IconButton
-                      onClick={() =>
-                        handleAddToCartWithLoading(item.product, item.id)
-                      }
+                      onClick={() => handleAddToCartWithLoading(item.product, item.id)}
                       size="small"
                       title="Thêm vào giỏ hàng"
                       disabled={loadingItems[item.id]}
@@ -425,50 +419,42 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
                         <AddShoppingCart className="text-primary" />
                       )}
                     </IconButton>
-                    <IconButton
-                      onClick={() => handleRemove(item.id)}
-                      size="small"
-                      title="Xóa khỏi wishlist"
-                    >
+                    <IconButton onClick={() => handleRemove(item.id)} size="small" title="Xóa khỏi wishlist">
                       <Delete className="text-gray-200 hover:text-red-500" />
                     </IconButton>
                   </div>
                 </motion.div>
-              ))
-            ) : (
-              <motion.p
-                variants={slideInFromRight}
-                className="text-center text-gray-500 py-8"
-              >
-                Danh sách yêu thích đang trống
-              </motion.p>
-            )}
-          </div>
-          {wishlist.length > 0 && (
-            <motion.div
-              variants={slideInFromRight}
-              className="mt-6 pt-4 border-t flex flex-col gap-2"
-            >
-              <Link href="/wishlist">
-                <button
-                  onClick={toggleWishlist}
-                  className="w-full border border-primary text-primary hover:bg-primary-light/20 p-4 flex items-center justify-center gap-2 rounded-md"
-                >
-                  <FavoriteBorder />
-                  Xem trang danh sách yêu thích
-                </button>
-              </Link>
-              <button
-                onClick={handleAddAllToCart}
-                className="w-full bg-primary hover:bg-primary-light p-4 text-white font-semibold flex items-center justify-center gap-2 rounded-md"
-              >
-                <AddShoppingCart />
-                Thêm tất cả vào giỏ hàng
-              </button>
-            </motion.div>
+              );
+            })
+          ) : (
+            <motion.p variants={slideInFromRight} className="text-center text-gray-500 py-8">
+              Danh sách yêu thích đang trống
+            </motion.p>
           )}
-        </motion.div>
-      </Drawer>
+        </div>
+
+        {wishlist.length > 0 && (
+          <motion.div variants={slideInFromRight} className="mt-6 pt-4 border-t flex flex-col gap-2">
+            <Link href="/wishlist">
+              <button
+                onClick={toggleWishlist}
+                className="w-full border border-primary text-primary hover:bg-primary-light/20 p-4 flex items-center justify-center gap-2 rounded-md"
+              >
+                <FavoriteBorder />
+                Xem trang danh sách yêu thích
+              </button>
+            </Link>
+            <button
+              onClick={handleAddAllToCart}
+              className="w-full bg-primary hover:bg-primary-light p-4 text-white font-semibold flex items-center justify-center gap-2 rounded-md"
+            >
+              <AddShoppingCart />
+              Thêm tất cả vào giỏ hàng
+            </button>
+          </motion.div>
+        )}
+      </motion.div>
+    </Drawer>
     </nav>
   );
 };
