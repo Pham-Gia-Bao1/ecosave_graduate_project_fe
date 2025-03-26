@@ -102,7 +102,7 @@ const Wishlist = () => {
   };
 
   const filteredWishlist = wishlist.filter((item) =>
-    item.product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.product?.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredWishlist.length / itemsPerPage);

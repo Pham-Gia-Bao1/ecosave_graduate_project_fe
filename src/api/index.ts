@@ -413,6 +413,7 @@ export const wishlist = {
     if (!token) return null;
 
     const { data } = await api.get('/wishlist', { headers: { Authorization: `Bearer ${token}` } });
+    console.log(data.data)
     return data;
   },
 
