@@ -57,7 +57,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   const [menuItems] = useState<{ [key: string]: string }>(
     menuItemsData.menuItems1
   );
-  const [active, setActive] = useState<number>(0);
   const [menuIcons] = useState<{ [key: string]: string }>(
     menuItemsData.menuItems2
   );
@@ -65,7 +64,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, isLogin }) => {
   const [isWishlistOpen, setIsWishlistOpen] = useState<boolean>(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] =
     useState<boolean>(false);
-  const menuRefs = useRef<(HTMLLIElement | null)[]>([]);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const totalItems = useSelector((state: RootState) => state.cart.totalItems);
   const [logoutLoading, setLogoutLoading] = useState(false);
